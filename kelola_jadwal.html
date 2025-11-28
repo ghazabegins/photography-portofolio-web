@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Jadwal Motret</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="https://ghazabegins.cyou/tj/logo.PNG" type="image/png">
+
+    <style>
+        /* --- 1. TEMA WARNA --- */
+        :root {
+            --bg-color: #eaeff2;
+            --text-color: #333;
+            --card-bg: #ffffff;
+            --accent: #11998e;
+            --success: #27ae60;
+            --row-even: #f9fbfd;
+            --row-hover: #f1f4f8;
+            --border: #ddd;
+            --row-done: #f0fff4;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            --card-bg: #1e1e1e;
+            --accent: #38ef7d;
+            --success: #2ecc71;
+            --row-even: #252525;
+            --row-hover: #2a2a2a;
+            --border: #333;
+            --row-done: #1e3a2a;
+        }
+
+        body { font-family: 'Poppins', sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; transition: background 0.3s, color 0.3s; }
+        .container { max-width: 1200px; margin: 0 auto; background: var(--card-bg); padding: 30px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); position: relative; }
+        
+        /* HEADER & SWITCH */
+        .top-bar { position: absolute; top: -40px; right: 0; display: flex; align-items: center; gap: 10px; font-size: 0.8rem; font-weight: 600; color: var(--text-color); }
+        .theme-switch { display: inline-block; height: 28px; position: relative; width: 50px; }
+        .theme-switch input { display:none; }
+        .slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 34px; }
+        .slider:before { background-color: white; bottom: 4px; content: ""; height: 20px; left: 4px; position: absolute; transition: .4s; width: 20px; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        .header-area { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 25px; border-bottom: 2px solid var(--border); padding-bottom: 15px; }
+        .title h2 { margin: 0; color: var(--text-color); }
+        
+        .controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        select.filter-select { padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--card-bg); color: var(--text-color); }
+        
+        /* BUTTON STYLES */
+        .btn { padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; }
+        
+        /* Tombol Home & Refresh (Neutral) */
+        .btn-neutral { background: var(--bg-color); border: 1px solid var(--border); color: var(--text-color); text-decoration: none; }
+        .btn-neutral:hover { opacity: 0.8; }
+
+        /* Tombol Print & Input (Accent) */
+        .btn-print { background: var(--text-color); color: var(--card-bg); }
+        .btn-primary { background: var(--accent); color: #000; text-decoration: none; } 
+        
+        /* Dark Mode Adjustments */
+        [data-theme="dark"] .btn-primary { color: #000; font-weight: 700; }
+
+        /* TABEL */
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        thead { background: var(--accent); color: #000; } 
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.9rem; color: var(--text-color); }
+        
+        tbody tr:nth-child(even) { background-color: var(--row-even); }
+        tbody tr:hover { background-color: var(--row-hover); }
+
+        .status-pending { color: #d35400; font-weight: 600; background: #fae5d3; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
+        .status-done { color: #27ae60; font-weight: 600; background: #d4efdf; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
+        tr.row-selesai { background-color: var(--row-done) !important; }
+        
+        .btn-mini { padding: 6px 10px; border-radius: 4px; border: none; cursor: pointer; font-size: 0.8rem; margin-right: 5px; }
+        .btn-delete { background: #f8d7da; color: #721c24; }
+        .btn-done { background: var(--success); color: white; }
+
+        /* MODAL */
+        .modal-confirm { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-confirm.active { display: flex; }
+        .confirm-box { background: var(--card-bg); padding: 30px; border-radius: 12px; text-align: center; max-width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .confirm-box h3 { color: var(--text-color); }
+        .confirm-box p { color: var(--text-color); opacity: 0.8; }
+        .confirm-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-yes { flex: 1; background: var(--success); color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer; }
+        .btn-no { flex: 1; background: var(--border); color: var(--text-color); padding: 10px; border: none; border-radius: 6px; cursor: pointer; }
+        
+        #loading { text-align: center; padding: 40px; color: var(--text-color); opacity: 0.6; }
+        
+        @media print { 
+            .controls, .action-cell, .top-bar { display: none !important; } 
+            body { background: white; color: black; }
+            .container { box-shadow: none; border: none; }
+            table { width: 100%; border: 1px solid #000; }
+            th, td { border: 1px solid #000; color: black; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <span>Mode Gelap</span>
+        <label class="theme-switch">
+            <input type="checkbox" id="checkbox" />
+            <div class="slider round"></div>
+        </label>
+        <a href="index.html" style="text-decoration:none; color:var(--text-color); margin-left:10px;">🏠</a>
+    </div>
+
+<div class="container">
+    <div class="header-area">
+        <div class="title"><h2>Laporan Jadwal</h2></div>
+        
+        <div class="controls">
+            <a href="index.html" class="btn btn-neutral">🏠 Home</a>
+            
+            <select id="filterBulan" class="filter-select" onchange="filterData()">
+                <option value="all">Semua Bulan</option>
+                <option value="0">Januari</option>
+                <option value="1">Februari</option>
+                <option value="2">Maret</option>
+                <option value="3">April</option>
+                <option value="4">Mei</option>
+                <option value="5">Juni</option>
+                <option value="6">Juli</option>
+                <option value="7">Agustus</option>
+                <option value="8">September</option>
+                <option value="9">Oktober</option>
+                <option value="10">November</option>
+                <option value="11">Desember</option>
+            </select>
+            <select id="filterTahun" class="filter-select" onchange="filterData()"><option value="all">Semua Tahun</option></select>
+            
+            <button class="btn btn-neutral" onclick="loadData()">↻ Refresh</button>
+            <button class="btn btn-print" onclick="window.print()">🖨️ Print</button>
+            <a href="jadwal_bola.html" class="btn btn-primary">+ Input Baru</a>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table id="tabel-laporan">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Tanggal</th>
+                    <th>Waktu</th>
+                    <th>Tim</th>
+                    <th>Venue</th>
+                    <th>Status</th>
+                    <th class="action-cell">Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="data-body"></tbody>
+        </table>
+        <div id="loading">Mengambil data...</div>
+    </div>
+</div>
+
+<div class="modal-confirm" id="modalConfirm">
+    <div class="confirm-box">
+        <h3>Tandai Selesai?</h3>
+        <p>Jadwal akan ditandai hijau.</p>
+        <div class="confirm-actions">
+            <button class="btn-no" onclick="closeConfirm()">Batal</button>
+            <button class="btn-yes" id="btnConfirmYes">Ya</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- GANTI URL DI SINI ---
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbwJGLSActDA3XA3SGZscC04W85P1TTeXEvBDXoGTd_uxCOM_ENNCIk_jD9MJIMl9B979g/exec';
+
+    // --- LOGIKA DARK MODE ---
+    const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+    const currentTheme = localStorage.getItem('theme');
+    if (currentTheme) {
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        if (currentTheme === 'dark') toggleSwitch.checked = true;
+    }
+    toggleSwitch.addEventListener('change', function(e) {
+        if (e.target.checked) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            document.documentElement.setAttribute('data-theme', 'light');
+            localStorage.setItem('theme', 'light');
+        }
+    });
+    // -----------------------
+    
+    let allData = [];
+    const tbody = document.getElementById('data-body');
+    const loadingDiv = document.getElementById('loading');
+    const modalConfirm = document.getElementById('modalConfirm');
+    let currentRowId = null;
+
+    function loadData() {
+        loadingDiv.style.display = 'block';
+        tbody.innerHTML = '';
+        fetch(scriptURL)
+            .then(res => res.json())
+            .then(data => {
+                loadingDiv.style.display = 'none';
+                data.sort((a, b) => new Date(a.Tanggal) - new Date(b.Tanggal));
+                allData = data;
+                setupYearFilter(data);
+                renderTable(allData);
+            })
+            .catch(err => {
+                loadingDiv.innerHTML = "Gagal koneksi. Coba refresh.";
+                console.error(err);
+            });
+    }
+
+    function renderTable(dataArray) {
+        tbody.innerHTML = '';
+        if(dataArray.length === 0) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Kosong</td></tr>'; return; }
+
+        dataArray.forEach((item, index) => {
+            const row = document.createElement('tr');
+            const status = item.Status || 'Pending';
+            const isDone = status === 'Selesai';
+            if(isDone) row.classList.add('row-selesai');
+
+            let tgl = '-';
+            if(item.Tanggal) {
+                tgl = new Date(item.Tanggal).toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'});
+            }
+
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${tgl}<br><small style="opacity:0.7">${item.Hari || ''}</small></td>
+                <td><b>${item.Waktu}</b></td>
+                <td>${item.Tim}</td>
+                <td><b>${item.Venue}</b></td>
+                <td>
+                    <span class="${isDone ? 'status-done' : 'status-pending'}">
+                        ${isDone ? '✔ Selesai' : '⏳ Pending'}
+                    </span>
+                </td>
+                <td class="action-cell">
+                    ${!isDone ? `<button class="btn-mini btn-done" onclick="openConfirm(${item.row})">✓</button>` : ''}
+                    <button class="btn-mini btn-delete" onclick="deleteData(${item.row})">🗑️</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function openConfirm(rowId) { currentRowId = rowId; modalConfirm.classList.add('active'); }
+    function closeConfirm() { modalConfirm.classList.remove('active'); currentRowId = null; }
+
+    document.getElementById('btnConfirmYes').addEventListener('click', function() {
+        if(!currentRowId) return;
+        const btn = this;
+        btn.innerText = "...";
+        btn.disabled = true;
+
+        const formData = new FormData();
+        formData.append('action', 'markDone');
+        formData.append('row', currentRowId);
+
+        fetch(scriptURL, { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(res => {
+                loadData();
+                closeConfirm();
+                btn.innerText = "Ya";
+                btn.disabled = false;
+            });
+    });
+
+    function deleteData(row) {
+        if(confirm("Hapus?")) {
+            const fd = new FormData(); fd.append('action', 'delete'); fd.append('row', row);
+            fetch(scriptURL, {method:'POST', body:fd}).then(() => loadData());
+        }
+    }
+
+    function filterData() {
+        const m = document.getElementById('filterBulan').value;
+        const y = document.getElementById('filterTahun').value;
+        const res = allData.filter(d => {
+            if(!d.Tanggal) return false;
+            const dt = new Date(d.Tanggal);
+            return (m === 'all' || dt.getMonth() == m) && (y === 'all' || dt.getFullYear() == y);
+        });
+        renderTable(res);
+    }
+
+    function setupYearFilter(data) {
+        const years = [...new Set(data.map(d => new Date(d.Tanggal).getFullYear()))].sort();
+        const sel = document.getElementById('filterTahun');
+        sel.innerHTML = '<option value="all">Semua Tahun</option>';
+        years.forEach(y => { if(!isNaN(y)) {
+            const opt = document.createElement('option'); opt.value = y; opt.innerText = y; sel.appendChild(opt);
+        }});
+    }
+
+    loadData();
+</script>
+
+</body>
+</html>
