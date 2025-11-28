@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Jadwal Bola</title>
+    
+    <link rel="icon" href="https://ghazabegins.cyou/tj/logo.PNG" type="image/png">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- 1. VARIABEL WARNA --- */
+        :root {
+            --bg-color: #f0f2f5;
+            --text-color: #333;
+            --card-bg: #ffffff;
+            --card-hover: #f8f9fa;
+            --shadow: rgba(0,0,0,0.1);
+            --accent: #11998e;
+            --subtitle: #666;
+            --highlight-bg: #e0f2f1;
+            --highlight-border: #11998e;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            --card-bg: #1e1e1e;
+            --card-hover: #2d2d2d;
+            --shadow: rgba(0,0,0,0.5);
+            --accent: #38ef7d;
+            --subtitle: #aaa;
+            --highlight-bg: #1a2e2a;
+            --highlight-border: #38ef7d;
+        }
+
+        /* --- 2. GLOBAL STYLE --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; transition: background-color 0.3s, color 0.3s; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* --- 3. TOP BAR --- */
+        .top-bar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .theme-switch { display: inline-block; height: 34px; position: relative; width: 60px; }
+        .theme-switch input { display:none; }
+        .slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 34px; }
+        .slider:before { background-color: white; bottom: 4px; content: ""; height: 26px; left: 4px; position: absolute; transition: .4s; width: 26px; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        /* --- 4. CONTAINER --- */
+        .dashboard-container {
+            text-align: center;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        /* STYLE KHUSUS LOGO GAMBAR */
+        .logo-img {
+            max-width: 150px; /* Ukuran maksimal agar tidak terlalu besar */
+            height: auto;
+            margin-bottom: 20px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto; /* Tengahkan gambar */
+        }
+        
+        h1 { font-size: 1.8rem; margin-bottom: 5px; font-weight: 700; }
+        p.subtitle { color: var(--subtitle); margin-bottom: 30px; font-size: 0.9rem; }
+
+        /* --- 5. WIDGET JADWAL HARI INI --- */
+        .today-widget {
+            background: var(--highlight-bg);
+            border: 2px solid var(--highlight-border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 40px;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            animation: slideDown 0.5s ease;
+        }
+
+        .widget-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--highlight-border); padding-bottom: 10px;
+        }
+        .widget-title { font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+        .widget-date { font-size: 0.85rem; font-weight: 600; opacity: 0.8; }
+        
+        .live-dot { height: 10px; width: 10px; background-color: red; border-radius: 50%; display: inline-block; animation: blink 1.5s infinite; }
+        
+        .widget-loading, .widget-empty { text-align: center; font-size: 0.9rem; color: var(--subtitle); padding: 10px; }
+        
+        .today-match-item {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px var(--shadow);
+            border-left: 5px solid var(--accent);
+        }
+        .match-time { font-weight: 700; font-size: 1.1rem; color: var(--text-color); }
+        .match-info { text-align: right; }
+        .match-teams { font-weight: 600; display: block; margin-bottom: 3px; }
+        .match-venue { font-size: 0.8rem; opacity: 0.8; display: block; }
+
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- 6. MENU GRID --- */
+        .menu-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        @media (min-width: 600px) { .menu-grid { grid-template-columns: 1fr 1fr; } }
+
+        .menu-card {
+            background-color: var(--card-bg); padding: 25px; border-radius: 16px; text-decoration: none; color: var(--text-color);
+            box-shadow: 0 5px 15px var(--shadow); transition: transform 0.2s, background-color 0.3s; display: flex; flex-direction: column; align-items: center; border: 2px solid transparent;
+        }
+        .menu-card:hover { transform: translateY(-5px); background-color: var(--card-hover); border-color: var(--accent); }
+        .card-icon { font-size: 2.5rem; margin-bottom: 10px; }
+        .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 5px; }
+        .card-desc { font-size: 0.85rem; color: var(--subtitle); }
+
+        .footer { margin-top: 40px; font-size: 0.8rem; color: var(--subtitle); opacity: 0.7; }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <span>Mode Gelap</span>
+        <label class="theme-switch">
+            <input type="checkbox" id="checkbox" />
+            <div class="slider round"></div>
+        </label>
+    </div>
+
+    <div class="dashboard-container">
+        <img src="https://ghazabegins.cyou/tj/logo.PNG" alt="Logo Ghazabegins" class="logo-img">
+        
+        <h1>Motret Manager</h1>
+        <p class="subtitle">Selamat Datang kembali!!</p>
+
+        <div class="today-widget">
+            <div class="widget-header">
+                <span class="widget-title"><span class="live-dot"></span> Jadwal Hari Ini</span>
+                <span class="widget-date" id="currentDateDisplay">-</span>
+            </div>
+            
+            <div id="today-schedule-list">
+                <div class="widget-loading">⏳ Mengecek jadwal...</div>
+            </div>
+        </div>
+
+        <div class="menu-grid">
+            <a href="jadwal_bola.html" class="menu-card">
+                <span class="card-icon">📝</span>
+                <span class="card-title">Input Baru</span>
+                <span class="card-desc">Tambah jadwal pertandingan</span>
+            </a>
+            <a href="kelola_jadwal.html" class="menu-card">
+                <span class="card-icon">📊</span>
+                <span class="card-title">Kelola Laporan</span>
+                <span class="card-desc">Lihat data & tandai selesai</span>
+            </a>
+        </div>
+
+        <div class="footer">
+            &copy; 2025 Tiangjauh Photography Management
+        </div>
+    </div>
+
+    <script>
+        // --- GANTI URL DI SINI ---
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwJGLSActDA3XA3SGZscC04W85P1TTeXEvBDXoGTd_uxCOM_ENNCIk_jD9MJIMl9B979g/exec';
+
+        // LOGIKA TANGGAL
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('currentDateDisplay').innerText = new Date().toLocaleDateString('id-ID', dateOptions);
+
+        // FETCH DATA WIDGET
+        const listContainer = document.getElementById('today-schedule-list');
+        fetch(scriptURL)
+            .then(res => res.json())
+            .then(data => {
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                const todayMatches = data.filter(item => {
+                    if(!item.Tanggal) return false;
+                    const itemDate = new Date(item.Tanggal);
+                    itemDate.setHours(0,0,0,0);
+                    return itemDate.getTime() === today.getTime();
+                });
+                todayMatches.sort((a, b) => a.Waktu.localeCompare(b.Waktu));
+                renderTodayMatches(todayMatches);
+            })
+            .catch(err => {
+                listContainer.innerHTML = '<div class="widget-empty" style="color:red;">Gagal memuat data. Cek koneksi.</div>';
+            });
+
+        function renderTodayMatches(matches) {
+            listContainer.innerHTML = '';
+            if (matches.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="widget-empty">
+                        <div style="font-size: 2rem; margin-bottom: 5px;">😴</div>
+                        <strong>Hari ini kosong, Bos!</strong><br>Silakan istirahat atau edit foto.
+                    </div>
+                `;
+                return;
+            }
+            matches.forEach(match => {
+                const div = document.createElement('div');
+                div.className = 'today-match-item';
+                const isDone = match.Status === 'Selesai';
+                const statusColor = isDone ? 'color:green' : '';
+                div.innerHTML = `
+                    <div class="match-time">⏰ ${match.Waktu}</div>
+                    <div class="match-info">
+                        <span class="match-teams" style="${statusColor}">${match.Tim}</span>
+                        <span class="match-venue">📍 ${match.Venue}</span>
+                    </div>
+                `;
+                listContainer.appendChild(div);
+            });
+        }
+
+        // DARK MODE LOGIC
+        const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme) {
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            if (currentTheme === 'dark') toggleSwitch.checked = true;
+        }
+        toggleSwitch.addEventListener('change', function(e) {
+            if (e.target.checked) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+            }
+        });
+    </script>
+
+</body>
+</html>
