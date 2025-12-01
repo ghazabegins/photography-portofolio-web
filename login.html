@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Login - Dashboard</title>
+    <link rel="icon" href="https://ghazabegins.cyou/tj/logo.PNG" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #121212; --text-color: #e0e0e0; --card-bg: #1e1e1e;
+            --accent: #38ef7d; --input-bg: #2d2d2d; --input-border: #444;
+            --error: #e74c3c; --logo-filter: none;
+        }
+        [data-theme="light"] {
+            --bg-color: #f0f2f5; --text-color: #333; --card-bg: #ffffff;
+            --accent: #11998e; --input-bg: #fcfcfc; --input-border: #e1e1e1;
+            --logo-filter: invert(1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color); color: var(--text-color);
+            height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px;
+        }
+
+        .login-card {
+            background: var(--card-bg);
+            padding: 40px 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            width: 100%; max-width: 400px; text-align: center;
+        }
+
+        .logo-img {
+            width: 120px; margin-bottom: 20px;
+            filter: var(--logo-filter); transition: filter 0.3s;
+        }
+
+        h2 { margin-bottom: 5px; font-weight: 700; }
+        p { opacity: 0.7; margin-bottom: 30px; font-size: 0.9rem; }
+        
+        input[type="password"] {
+            width: 100%; padding: 15px; border: 2px solid var(--input-border);
+            border-radius: 12px; font-size: 1.1rem; background-color: var(--input-bg);
+            color: var(--text-color); text-align: center; letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+        input:focus { border-color: var(--accent); outline: none; }
+
+        .btn-login {
+            width: 100%; padding: 15px; background-color: var(--accent);
+            color: #000; border: none; border-radius: 12px;
+            font-size: 1rem; font-weight: 700; cursor: pointer; transition: 0.2s;
+        }
+        .btn-login:hover { transform: scale(1.02); }
+        .shake { animation: shake 0.5s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25%, 75% { transform: translateX(-5px); } 50% { transform: translateX(5px); } }
+        
+        #error-msg { color: var(--error); margin-top: 15px; display: none; font-size: 0.9rem;}
+    </style>
+</head>
+<body>
+    <div class="login-card" id="card">
+        <img src="https://ghazabegins.cyou/tj/logo.PNG" alt="Logo" class="logo-img">
+        <h2>Akses Terbatas</h2>
+        <p>Masukkan kode keamanan</p>
+        <form id="loginForm">
+            <input type="password" id="password" placeholder="••••••" required>
+            <button type="submit" class="btn-login">Buka Dashboard 🔓</button>
+            <div id="error-msg">Password salah!</div>
+        </form>
+    </div>
+
+    <script>
+        const PASSWORD_RAHASIA = "uci"; // GANTI PASSWORD DISINI
+        
+        if(localStorage.getItem('isLoggedIn') === 'true') window.location.href = 'index.html';
+        
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const pass = document.getElementById('password');
+            const card = document.getElementById('card');
+            
+            if(pass.value === PASSWORD_RAHASIA) {
+                localStorage.setItem('isLoggedIn', 'true');
+                window.location.href = 'index.html';
+            } else {
+                document.getElementById('error-msg').style.display = 'block';
+                card.classList.add('shake');
+                pass.value = '';
+                setTimeout(() => card.classList.remove('shake'), 500);
+            }
+        });
+    </script>
+</body>
+</html>
