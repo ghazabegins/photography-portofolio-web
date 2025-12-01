@@ -1,313 +1,226 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="light">
+<html lang="id" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Jadwal Motret</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Laporan Jadwal</title>
     <link rel="icon" href="https://ghazabegins.cyou/tj/logo.PNG" type="image/png">
-
+    <script>if(localStorage.getItem('isLoggedIn')!=='true')window.location.href='login.html';</script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        /* --- 1. TEMA WARNA --- */
         :root {
-            --bg-color: #eaeff2;
-            --text-color: #333;
-            --card-bg: #ffffff;
-            --accent: #11998e;
-            --success: #27ae60;
-            --row-even: #f9fbfd;
-            --row-hover: #f1f4f8;
-            --border: #ddd;
-            --row-done: #f0fff4;
+            --bg: #eaeff2; --text: #333; --card: #fff; --acc: #11998e; --suc: #27ae60; --wrn: #f39c12; --err: #e74c3c;
+            --brd: #ddd; --row: #f9fbfd; --done: #f0fff4; --mod: #fff; --inp: #fff;
         }
-
         [data-theme="dark"] {
-            --bg-color: #121212;
-            --text-color: #e0e0e0;
-            --card-bg: #1e1e1e;
-            --accent: #38ef7d;
-            --success: #2ecc71;
-            --row-even: #252525;
-            --row-hover: #2a2a2a;
-            --border: #333;
-            --row-done: #1e3a2a;
+            --bg: #121212; --text: #e0e0e0; --card: #1e1e1e; --acc: #38ef7d; --suc: #2ecc71; --wrn: #f1c40f; --err: #e74c3c;
+            --brd: #333; --row: #252525; --done: #1e3a2a; --mod: #2c2c2c; --inp: #333;
         }
 
-        body { font-family: 'Poppins', sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; transition: background 0.3s, color 0.3s; }
-        .container { max-width: 1200px; margin: 0 auto; background: var(--card-bg); padding: 30px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); position: relative; }
-        
-        /* HEADER & SWITCH */
-        .top-bar { position: absolute; top: -40px; right: 0; display: flex; align-items: center; gap: 10px; font-size: 0.8rem; font-weight: 600; color: var(--text-color); }
-        .theme-switch { display: inline-block; height: 28px; position: relative; width: 50px; }
-        .theme-switch input { display:none; }
-        .slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 34px; }
-        .slider:before { background-color: white; bottom: 4px; content: ""; height: 20px; left: 4px; position: absolute; transition: .4s; width: 20px; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--accent); }
-        input:checked + .slider:before { transform: translateX(22px); }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
+        .container { max-width: 1200px; margin: 0 auto; background: var(--card); padding: 20px; border-radius: 12px; }
 
-        .header-area { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 25px; border-bottom: 2px solid var(--border); padding-bottom: 15px; }
-        .title h2 { margin: 0; color: var(--text-color); }
+        /* HEADER & CONTROLS */
+        .header { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
+        @media(min-width: 768px) { .header { flex-direction: row; justify-content: space-between; align-items: center; } }
         
-        .controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-        select.filter-select { padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--card-bg); color: var(--text-color); }
+        .controls { display: flex; gap: 8px; flex-wrap: wrap; }
+        .filter-select { padding: 8px; border: 1px solid var(--brd); border-radius: 6px; background: var(--inp); color: var(--text); flex: 1; min-width: 100px; }
         
-        /* BUTTON STYLES */
-        .btn { padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; }
+        .btn { padding: 8px 12px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.85rem; }
+        .btn-neu { background: var(--bg); border: 1px solid var(--brd); color: var(--text); text-decoration: none; }
+        .btn-pri { background: var(--acc); color: #000; text-decoration: none; }
         
-        /* Tombol Home & Refresh (Neutral) */
-        .btn-neutral { background: var(--bg-color); border: 1px solid var(--border); color: var(--text-color); text-decoration: none; }
-        .btn-neutral:hover { opacity: 0.8; }
+        /* TABLE RESPONSIVE */
+        .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 10px; border-radius: 8px; border: 1px solid var(--brd); }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; } /* Min width agar tidak gepeng */
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--brd); font-size: 0.9rem; }
+        thead { background: var(--acc); color: #000; }
+        tbody tr:nth-child(even) { background: var(--row); }
+        tr.selesai { background: var(--done) !important; }
 
-        /* Tombol Print & Input (Accent) */
-        .btn-print { background: var(--text-color); color: var(--card-bg); }
-        .btn-primary { background: var(--accent); color: #000; text-decoration: none; } 
-        
-        /* Dark Mode Adjustments */
-        [data-theme="dark"] .btn-primary { color: #000; font-weight: 700; }
-
-        /* TABEL */
-        .table-responsive { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 900px; }
-        thead { background: var(--accent); color: #000; } 
-        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.9rem; color: var(--text-color); }
-        
-        tbody tr:nth-child(even) { background-color: var(--row-even); }
-        tbody tr:hover { background-color: var(--row-hover); }
-
-        .status-pending { color: #d35400; font-weight: 600; background: #fae5d3; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
-        .status-done { color: #27ae60; font-weight: 600; background: #d4efdf; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
-        tr.row-selesai { background-color: var(--row-done) !important; }
-        
-        .btn-mini { padding: 6px 10px; border-radius: 4px; border: none; cursor: pointer; font-size: 0.8rem; margin-right: 5px; }
-        .btn-delete { background: #f8d7da; color: #721c24; }
-        .btn-done { background: var(--success); color: white; }
+        .btn-mini { padding: 6px 10px; border-radius: 4px; border: none; cursor: pointer; color: #fff; margin-right: 4px; }
+        .bg-ok { background: var(--suc); } .bg-ed { background: var(--wrn); color:#000; } .bg-del { background: var(--err); }
 
         /* MODAL */
-        .modal-confirm { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-confirm.active { display: flex; }
-        .confirm-box { background: var(--card-bg); padding: 30px; border-radius: 12px; text-align: center; max-width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        .confirm-box h3 { color: var(--text-color); }
-        .confirm-box p { color: var(--text-color); opacity: 0.8; }
-        .confirm-actions { display: flex; gap: 10px; margin-top: 20px; }
-        .btn-yes { flex: 1; background: var(--success); color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer; }
-        .btn-no { flex: 1; background: var(--border); color: var(--text-color); padding: 10px; border: none; border-radius: 6px; cursor: pointer; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 99; justify-content: center; align-items: center; padding: 20px; }
+        .modal.active { display: flex; }
+        .modal-box { background: var(--mod); padding: 25px; border-radius: 12px; width: 100%; max-width: 400px; }
         
-        #loading { text-align: center; padding: 40px; color: var(--text-color); opacity: 0.6; }
-        
-        @media print { 
-            .controls, .action-cell, .top-bar { display: none !important; } 
-            body { background: white; color: black; }
-            .container { box-shadow: none; border: none; }
-            table { width: 100%; border: 1px solid #000; }
-            th, td { border: 1px solid #000; color: black; }
-        }
+        input, select.inp-form { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid var(--brd); background: var(--inp); color: var(--text); border-radius: 6px; }
+        .act-btns { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-full { flex: 1; padding: 10px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }
+
+        /* DARK MODE SWITCH POJOK */
+        .top-corner { position: absolute; top: 15px; right: 15px; display: flex; gap: 10px; align-items: center; }
+        .theme-switch { display: inline-block; height: 24px; position: relative; width: 44px; }
+        .theme-switch input { display:none; }
+        .slider { background: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 34px; }
+        .slider:before { background: white; bottom: 3px; content: ""; height: 18px; left: 3px; position: absolute; transition: .4s; width: 18px; border-radius: 50%; }
+        input:checked + .slider { background: var(--acc); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        @media print { .controls, .action-cell, .top-corner { display: none; } body { background: #fff; color: #000; } table { border: 1px solid #000; } th, td { border: 1px solid #000; } }
     </style>
 </head>
 <body>
 
-    <div class="top-bar">
-        <span>Mode Gelap</span>
+    <div class="top-corner">
         <label class="theme-switch">
             <input type="checkbox" id="checkbox" />
             <div class="slider round"></div>
         </label>
-        <a href="index.html" style="text-decoration:none; color:var(--text-color); margin-left:10px;">🏠</a>
+        <a href="index.html" style="text-decoration:none;font-size:1.5rem">🏠</a>
     </div>
 
-<div class="container">
-    <div class="header-area">
-        <div class="title"><h2>Laporan Jadwal</h2></div>
+    <div class="container">
+        <div class="header">
+            <h2 style="margin:0">Laporan Jadwal</h2>
+            <div class="controls">
+                <a href="index.html" class="btn btn-neu">🏠 Home</a>
+                <select id="fBulan" class="filter-select" onchange="load()"><option value="all">Bulan</option>
+                    <option value="0">Jan</option><option value="1">Feb</option><option value="2">Mar</option><option value="3">Apr</option>
+                    <option value="4">Mei</option><option value="5">Jun</option><option value="6">Jul</option><option value="7">Agu</option>
+                    <option value="8">Sep</option><option value="9">Okt</option><option value="10">Nov</option><option value="11">Des</option>
+                </select>
+                <select id="fTahun" class="filter-select" onchange="load()"><option value="all">Tahun</option></select>
+                <button class="btn btn-neu" onclick="load()">↻</button>
+                <a href="jadwal_bola.html" class="btn btn-pri">+ Baru</a>
+            </div>
+        </div>
+
+        <div class="table-wrap">
+            <table id="tbl">
+                <thead><tr><th>Tgl</th><th>Waktu</th><th>Tim</th><th>Venue</th><th>Sts</th><th class="action-cell">Aksi</th></tr></thead>
+                <tbody id="tbody"></tbody>
+            </table>
+            <div id="loading" style="text-align:center; padding:20px; opacity:0.6">⏳ Loading...</div>
+        </div>
+    </div>
+
+    <div class="modal" id="modalEdit">
+        <div class="modal-box">
+            <h3>✏️ Edit</h3>
+            <form id="formEdit">
+                <input type="hidden" name="action" value="update">
+                <input type="hidden" id="e_row" name="row">
+                <label>Tanggal</label><input type="date" id="e_tgl" name="Tanggal" required>
+                <input type="hidden" id="e_hari" name="Hari">
+                <label>Waktu</label><input type="text" id="e_waktu" name="Waktu" required>
+                <label>Tim</label><input type="text" id="e_tim" name="Tim" required>
+                <label>Venue</label><input type="text" id="e_venue" name="Venue" required>
+                <div class="act-btns">
+                    <button type="button" class="btn-full" style="background:var(--brd); color:var(--text)" onclick="document.getElementById('modalEdit').classList.remove('active')">Batal</button>
+                    <button type="submit" class="btn-full" style="background:var(--acc); color:#000">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwJGLSActDA3XA3SGZscC04W85P1TTeXEvBDXoGTd_uxCOM_ENNCIk_jD9MJIMl9B979g/exec'; // GANTI URL DISINI
+
+        // DARK MODE
+        const sw = document.querySelector('.theme-switch input');
+        const th = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', th);
+        if(th==='dark') sw.checked=true;
+        sw.addEventListener('change', e => {
+            const n = e.target.checked?'dark':'light';
+            document.documentElement.setAttribute('data-theme',n); localStorage.setItem('theme',n);
+        });
+
+        let allData = [];
         
-        <div class="controls">
-            <a href="index.html" class="btn btn-neutral">🏠 Home</a>
+        function load() {
+            document.getElementById('loading').style.display='block';
+            document.getElementById('tbody').innerHTML='';
             
-            <select id="filterBulan" class="filter-select" onchange="filterData()">
-                <option value="all">Semua Bulan</option>
-                <option value="0">Januari</option>
-                <option value="1">Februari</option>
-                <option value="2">Maret</option>
-                <option value="3">April</option>
-                <option value="4">Mei</option>
-                <option value="5">Juni</option>
-                <option value="6">Juli</option>
-                <option value="7">Agustus</option>
-                <option value="8">September</option>
-                <option value="9">Oktober</option>
-                <option value="10">November</option>
-                <option value="11">Desember</option>
-            </select>
-            <select id="filterTahun" class="filter-select" onchange="filterData()"><option value="all">Semua Tahun</option></select>
+            fetch(scriptURL).then(r=>r.json()).then(d=>{
+                document.getElementById('loading').style.display='none';
+                d.sort((a,b)=>new Date(a.Tanggal)-new Date(b.Tanggal));
+                allData = d;
+                
+                // Set Tahun Filter
+                const years = [...new Set(d.map(x=>new Date(x.Tanggal).getFullYear()))].sort();
+                const selY = document.getElementById('fTahun');
+                if(selY.options.length===1) years.forEach(y=>selY.innerHTML+=`<option value="${y}">${y}</option>`);
+
+                render();
+            });
+        }
+
+        function render() {
+            const m = document.getElementById('fBulan').value;
+            const y = document.getElementById('fTahun').value;
+            const tbody = document.getElementById('tbody');
+            tbody.innerHTML = '';
+
+            const filtered = allData.filter(d => {
+                if(!d.Tanggal) return false;
+                const dt = new Date(d.Tanggal);
+                return (m==='all' || dt.getMonth()==m) && (y==='all' || dt.getFullYear()==y);
+            });
+
+            if(filtered.length===0) { tbody.innerHTML='<tr><td colspan="6" style="text-align:center">Kosong</td></tr>'; return; }
+
+            filtered.forEach(i => {
+                const isDone = i.Status === 'Selesai';
+                const tr = document.createElement('tr');
+                if(isDone) tr.className = 'selesai';
+                
+                let tgl = new Date(i.Tanggal).toLocaleDateString('id-ID',{day:'numeric',month:'short'});
+                
+                tr.innerHTML = `
+                    <td>${tgl}<br><small style="opacity:0.6">${i.Hari}</small></td>
+                    <td><b>${i.Waktu}</b></td>
+                    <td>${i.Tim}</td>
+                    <td>${i.Venue}</td>
+                    <td>${isDone ? '<span style="color:var(--suc)">✔</span>' : '<span style="color:var(--text);opacity:0.5">⏳</span>'}</td>
+                    <td class="action-cell" style="white-space:nowrap">
+                        ${!isDone ? `<button class="btn-mini bg-ok" onclick="act('markDone',${i.row})">✔</button>`:''}
+                        <button class="btn-mini bg-ed" onclick='edit(${JSON.stringify(i)})'>✏️</button>
+                        <button class="btn-mini bg-del" onclick="act('delete',${i.row})">🗑️</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function act(action, row) {
+            if(!confirm(action==='delete'?'Hapus?':'Selesai?')) return;
+            const fd = new FormData(); fd.append('action',action); fd.append('row',row);
+            fetch(scriptURL, {method:'POST', body:fd}).then(()=>load());
+        }
+
+        function edit(i) {
+            document.getElementById('e_row').value = i.row;
+            document.getElementById('e_waktu').value = i.Waktu;
+            document.getElementById('e_tim').value = i.Tim;
+            document.getElementById('e_venue').value = i.Venue;
             
-            <button class="btn btn-neutral" onclick="loadData()">↻ Refresh</button>
-            <button class="btn btn-print" onclick="window.print()">🖨️ Print</button>
-            <a href="jadwal_bola.html" class="btn btn-primary">+ Input Baru</a>
-        </div>
-    </div>
-
-    <div class="table-responsive">
-        <table id="tabel-laporan">
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Tanggal</th>
-                    <th>Waktu</th>
-                    <th>Tim</th>
-                    <th>Venue</th>
-                    <th>Status</th>
-                    <th class="action-cell">Aksi</th>
-                </tr>
-            </thead>
-            <tbody id="data-body"></tbody>
-        </table>
-        <div id="loading">Mengambil data...</div>
-    </div>
-</div>
-
-<div class="modal-confirm" id="modalConfirm">
-    <div class="confirm-box">
-        <h3>Tandai Selesai?</h3>
-        <p>Jadwal akan ditandai hijau.</p>
-        <div class="confirm-actions">
-            <button class="btn-no" onclick="closeConfirm()">Batal</button>
-            <button class="btn-yes" id="btnConfirmYes">Ya</button>
-        </div>
-    </div>
-</div>
-
-<script>
-    // --- GANTI URL DI SINI ---
-    const scriptURL = 'GANTI URL DI SINI';
-
-    // --- LOGIKA DARK MODE ---
-    const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
-    const currentTheme = localStorage.getItem('theme');
-    if (currentTheme) {
-        document.documentElement.setAttribute('data-theme', currentTheme);
-        if (currentTheme === 'dark') toggleSwitch.checked = true;
-    }
-    toggleSwitch.addEventListener('change', function(e) {
-        if (e.target.checked) {
-            document.documentElement.setAttribute('data-theme', 'dark');
-            localStorage.setItem('theme', 'dark');
-        } else {
-            document.documentElement.setAttribute('data-theme', 'light');
-            localStorage.setItem('theme', 'light');
+            const d = new Date(i.Tanggal);
+            document.getElementById('e_tgl').value = d.toISOString().split('T')[0];
+            document.getElementById('e_hari').value = i.Hari;
+            
+            document.getElementById('modalEdit').classList.add('active');
         }
-    });
-    // -----------------------
-    
-    let allData = [];
-    const tbody = document.getElementById('data-body');
-    const loadingDiv = document.getElementById('loading');
-    const modalConfirm = document.getElementById('modalConfirm');
-    let currentRowId = null;
 
-    function loadData() {
-        loadingDiv.style.display = 'block';
-        tbody.innerHTML = '';
-        fetch(scriptURL)
-            .then(res => res.json())
-            .then(data => {
-                loadingDiv.style.display = 'none';
-                data.sort((a, b) => new Date(a.Tanggal) - new Date(b.Tanggal));
-                allData = data;
-                setupYearFilter(data);
-                renderTable(allData);
-            })
-            .catch(err => {
-                loadingDiv.innerHTML = "Gagal koneksi. Coba refresh.";
-                console.error(err);
-            });
-    }
-
-    function renderTable(dataArray) {
-        tbody.innerHTML = '';
-        if(dataArray.length === 0) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Kosong</td></tr>'; return; }
-
-        dataArray.forEach((item, index) => {
-            const row = document.createElement('tr');
-            const status = item.Status || 'Pending';
-            const isDone = status === 'Selesai';
-            if(isDone) row.classList.add('row-selesai');
-
-            let tgl = '-';
-            if(item.Tanggal) {
-                tgl = new Date(item.Tanggal).toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'});
-            }
-
-            row.innerHTML = `
-                <td>${index + 1}</td>
-                <td>${tgl}<br><small style="opacity:0.7">${item.Hari || ''}</small></td>
-                <td><b>${item.Waktu}</b></td>
-                <td>${item.Tim}</td>
-                <td><b>${item.Venue}</b></td>
-                <td>
-                    <span class="${isDone ? 'status-done' : 'status-pending'}">
-                        ${isDone ? '✔ Selesai' : '⏳ Pending'}
-                    </span>
-                </td>
-                <td class="action-cell">
-                    ${!isDone ? `<button class="btn-mini btn-done" onclick="openConfirm(${item.row})">✓</button>` : ''}
-                    <button class="btn-mini btn-delete" onclick="deleteData(${item.row})">🗑️</button>
-                </td>
-            `;
-            tbody.appendChild(row);
+        document.getElementById('e_tgl').addEventListener('change', function() {
+            const d = new Date(this.value);
+            if(!isNaN(d)) document.getElementById('e_hari').value = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'][d.getDay()];
         });
-    }
 
-    function openConfirm(rowId) { currentRowId = rowId; modalConfirm.classList.add('active'); }
-    function closeConfirm() { modalConfirm.classList.remove('active'); currentRowId = null; }
-
-    document.getElementById('btnConfirmYes').addEventListener('click', function() {
-        if(!currentRowId) return;
-        const btn = this;
-        btn.innerText = "...";
-        btn.disabled = true;
-
-        const formData = new FormData();
-        formData.append('action', 'markDone');
-        formData.append('row', currentRowId);
-
-        fetch(scriptURL, { method: 'POST', body: formData })
-            .then(res => res.json())
-            .then(res => {
-                loadData();
-                closeConfirm();
-                btn.innerText = "Ya";
-                btn.disabled = false;
+        document.getElementById('formEdit').addEventListener('submit', function(e) {
+            e.preventDefault();
+            fetch(scriptURL, {method:'POST', body:new FormData(this)}).then(()=>{
+                document.getElementById('modalEdit').classList.remove('active');
+                load();
             });
-    });
-
-    function deleteData(row) {
-        if(confirm("Hapus?")) {
-            const fd = new FormData(); fd.append('action', 'delete'); fd.append('row', row);
-            fetch(scriptURL, {method:'POST', body:fd}).then(() => loadData());
-        }
-    }
-
-    function filterData() {
-        const m = document.getElementById('filterBulan').value;
-        const y = document.getElementById('filterTahun').value;
-        const res = allData.filter(d => {
-            if(!d.Tanggal) return false;
-            const dt = new Date(d.Tanggal);
-            return (m === 'all' || dt.getMonth() == m) && (y === 'all' || dt.getFullYear() == y);
         });
-        renderTable(res);
-    }
 
-    function setupYearFilter(data) {
-        const years = [...new Set(data.map(d => new Date(d.Tanggal).getFullYear()))].sort();
-        const sel = document.getElementById('filterTahun');
-        sel.innerHTML = '<option value="all">Semua Tahun</option>';
-        years.forEach(y => { if(!isNaN(y)) {
-            const opt = document.createElement('option'); opt.value = y; opt.innerText = y; sel.appendChild(opt);
-        }});
-    }
-
-    loadData();
-</script>
-
+        load();
+    </script>
 </body>
-
 </html>
