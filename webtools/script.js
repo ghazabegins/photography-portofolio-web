@@ -1,7 +1,7 @@
 /**
- * TJ SOSMED TOOLS - MASTER SCRIPT (MOBILE TOUCH FIXED FINAL)
+ * TJ SOSMED TOOLS - MASTER SCRIPT (CAROUSEL FIXED)
  * Developed by Ghaza Algifari (2025)
- * Fixes: Mobile File Picker Conflict, Memory Crash & Hidden Input Bug
+ * Fixes: Carousel Templates, Mobile Touch Conflict, Memory Crash
  */
 
 // ==========================================
@@ -26,9 +26,7 @@ const MAX_MOBILE_DIMENSION = 4096;
 function fixMobileInput(inputId) {
     const el = document.getElementById(inputId);
     if (el) {
-        // Hapus atribut hidden yang memblokir iPhone
         el.removeAttribute('hidden');
-        // Pastikan style membuatnya "ada" tapi tak terlihat
         el.style.display = 'block';
         el.style.height = '0';
         el.style.width = '0';
@@ -217,7 +215,7 @@ if (document.getElementById('urlInput')) {
 
 
 // ==========================================
-// 5. FITUR: METADATA REMOVER (MOBILE FIX)
+// 5. FITUR: METADATA REMOVER
 // ==========================================
 if (document.getElementById('dropZone') && !document.getElementById('dropZoneViewer')) {
     const dropZone = document.getElementById('dropZone');
@@ -226,12 +224,9 @@ if (document.getElementById('dropZone') && !document.getElementById('dropZoneVie
     const previewImage = document.getElementById('previewImage');
     const cleanBtn = document.getElementById('downloadCleanBtn');
 
-    // 1. Perbaiki Input File secara otomatis
     fixMobileInput('fileInput');
 
-    // 2. Cegah Konflik Klik di Mobile
     dropZone.addEventListener('click', (e) => {
-        // Jika yang diklik adalah tombol atau icon di dalam tombol, JANGAN trigger klik lagi
         if (e.target.closest('button') || e.target.closest('input')) return;
         fileInput.click();
     });
@@ -250,15 +245,11 @@ if (document.getElementById('dropZone') && !document.getElementById('dropZoneVie
             const img = new Image();
             img.onload = function() {
                 const canvas = document.createElement('canvas');
-                
-                // Resize Anti-Crash
                 const size = calculateSafeSize(img.width, img.height);
                 canvas.width = size.w;
                 canvas.height = size.h;
-                
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, size.w, size.h);
-                
                 canvas.toBlob((blob) => {
                     const cleanUrl = URL.createObjectURL(blob);
                     loadingDiv.classList.add('hidden'); 
@@ -269,10 +260,7 @@ if (document.getElementById('dropZone') && !document.getElementById('dropZoneVie
                     cleanBtn.download = "Clean_" + file.name;
                 }, 'image/jpeg', 0.95); 
             };
-            img.onerror = function() {
-                alert("File gambar rusak.");
-                loadingDiv.classList.add('hidden');
-            };
+            img.onerror = function() { alert("File gambar rusak."); loadingDiv.classList.add('hidden'); };
             img.src = e.target.result;
         }; 
         reader.readAsDataURL(file);
@@ -281,7 +269,7 @@ if (document.getElementById('dropZone') && !document.getElementById('dropZoneVie
 
 
 // ==========================================
-// 6. FITUR: METADATA VIEWER (MOBILE FIX)
+// 6. FITUR: METADATA VIEWER
 // ==========================================
 if (document.getElementById('viewerPage')) {
     const dropZone = document.getElementById('dropZoneViewer');
@@ -292,10 +280,8 @@ if (document.getElementById('viewerPage')) {
     const gpsContainer = document.getElementById('gpsContainer');
     const mapsLink = document.getElementById('mapsLink');
 
-    // 1. Perbaiki Input File
     fixMobileInput('fileInputViewer');
 
-    // 2. Cegah Konflik Klik
     dropZone.addEventListener('click', (e) => {
         if (e.target.closest('button') || e.target.closest('input')) return;
         fileInput.click();
@@ -337,17 +323,14 @@ if (document.getElementById('viewerPage')) {
         EXIF.getData(file, function() {
             loadingDiv.classList.add('hidden'); 
             resultDiv.classList.remove('hidden');
-            
             const allTags = EXIF.getAllTags(this);
             let tableHTML = "";
             let hasData = false;
-
             const keyMap = [
                 { key: 'Make', label: 'Merk Kamera' }, { key: 'Model', label: 'Model' }, { key: 'LensModel', label: 'Lensa' },
                 { key: 'ExposureTime', label: 'Shutter', fmt: 's' }, { key: 'FNumber', label: 'Aperture', fmt: 'f' },
                 { key: 'ISOSpeedRatings', label: 'ISO' }, { key: 'DateTimeOriginal', label: 'Waktu' }
             ];
-
             keyMap.forEach(k => {
                 if(allTags[k.key]) {
                     hasData = true;
@@ -357,12 +340,10 @@ if (document.getElementById('viewerPage')) {
                     tableHTML += `<tr><td style="color:#00ff88;font-weight:bold">${k.label}</td><td>${v}</td></tr>`;
                 }
             });
-
             for(let t in allTags) {
                 if(keyMap.some(k=>k.key==t) || t.includes('GPS') || t=='MakerNote' || t=='thumbnail' || t=='UserComment') continue;
                 tableHTML += `<tr><td style="color:#aaa">${t}</td><td>${allTags[t]}</td></tr>`;
             }
-
             if(!hasData) tableHTML = `<tr><td colspan="2" align="center">Data EXIF Kosong.</td></tr>`;
             
             tableBody.innerHTML = tableHTML;
@@ -385,9 +366,8 @@ if (document.getElementById('viewerPage')) {
 
 
 // ==========================================
-// 7. FITUR LAIN (TETAP ADA)
+// 7. FITUR: CAPTION GENERATOR
 // ==========================================
-
 if (document.getElementById('captionPage')) {
     const resultBox = document.getElementById('result');
     const captionText = document.getElementById('captionText');
@@ -414,6 +394,10 @@ if (document.getElementById('captionPage')) {
     };
 }
 
+
+// ==========================================
+// 8. FITUR: HASHTAG RISET
+// ==========================================
 if (document.getElementById('hashtagPage')) {
     const keywordInput = document.getElementById('keywordInput');
     const resultBox = document.getElementById('result');
@@ -448,6 +432,10 @@ if (document.getElementById('hashtagPage')) {
     keywordInput.addEventListener("keypress", function(event) { if (event.key === "Enter") window.generateHashtags(); });
 }
 
+
+// ==========================================
+// 9. FITUR: AUTO WATERMARK
+// ==========================================
 if (document.getElementById('watermarkPage')) {
     const mainInput = document.getElementById('mainPhotoInput');
     const logoInput = document.getElementById('logoInput');
@@ -507,11 +495,8 @@ if (document.getElementById('watermarkPage')) {
     });
 
     function applyWatermarkToCanvas(context, image, w, h) {
-        if (currentRatio !== 'original') {
-             context.drawImage(image, 0, 0, w, h);
-        } else {
-             context.drawImage(image, 0, 0, w, h);
-        }
+        // Draw image directly (assume pre-calculated dims)
+        context.drawImage(image, 0, 0, w, h);
 
         if (isLogoLoaded) {
             const logoWidth = (w * currentSize) / 100;
@@ -540,6 +525,7 @@ if (document.getElementById('watermarkPage')) {
         let w = previewImg.width;
         let h = previewImg.height;
 
+        // Resize preview agar tidak berat
         if (currentRatio === 'original') {
             const previewMax = 1080; 
             if(w>previewMax || h>previewMax) {
@@ -616,6 +602,10 @@ if (document.getElementById('watermarkPage')) {
     });
 }
 
+
+// ==========================================
+// 10. FITUR: AUTO CAROUSEL (TEMPLATES RESTORED)
+// ==========================================
 if (document.getElementById('carouselPage')) {
     const fileInput = document.getElementById('carouselInput');
     const fileCountDisplay = document.getElementById('fileCount');
@@ -663,12 +653,11 @@ if (document.getElementById('carouselPage')) {
                 const slideNum = index + 1;
                 const total = loadedImages.length;
                 
-                // Demo Text Drawing (Simple)
-                ctx.fillStyle = "#fff"; ctx.fillRect(0,0,cWidth,cHeight);
-                ctx.drawImage(img, 0, 0, cWidth, cHeight);
-                ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(0, cHeight-100, cWidth, 100);
-                ctx.fillStyle = "#fff"; ctx.font = "50px Arial"; ctx.textAlign = "center";
-                ctx.fillText(`${slideNum}/${total}`, cWidth/2, cHeight-30);
+                // LOGIC TEMPLATE ASLI (RESTORED)
+                if (templateType === 'minimal') drawMinimalTemplate(ctx, img, cWidth, cHeight, slideNum, total);
+                else if (templateType === 'split') drawSplitTemplate(ctx, img, cWidth, cHeight, slideNum, total, mainTitle);
+                else if (templateType === 'cinematic') drawCinematicTemplate(ctx, img, cWidth, cHeight, slideNum, total, mainTitle);
+                else if (templateType === 'journal') drawJournalTemplate(ctx, img, cWidth, cHeight, slideNum, total, mainTitle);
 
                 const resultItem = document.createElement('div');
                 resultItem.className = 'slide-item';
@@ -687,4 +676,70 @@ if (document.getElementById('carouselPage')) {
             loadingDiv.classList.add('hidden'); alert("Gagal memproses carousel."); console.error(error);
         }
     });
+
+    // FUNGSI TEMPLATE
+    function drawImageCover(ctx, img, x, y, w, h) {
+        const imgRatio = img.width / img.height;
+        const targetRatio = w / h;
+        let drawW, drawH, drawX, drawY;
+        if (imgRatio > targetRatio) { 
+            drawH = h; drawW = h * imgRatio; drawY = y; drawX = x - (drawW - w) / 2; 
+        } else { 
+            drawW = w; drawH = w / imgRatio; drawX = x; drawY = y - (drawH - h) / 2; 
+        }
+        ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.closePath(); ctx.clip();
+        ctx.drawImage(img, drawX, drawY, drawW, drawH); ctx.restore();
+    }
+
+    function drawMinimalTemplate(ctx, img, w, h, num, total) {
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, w, h);
+        const pad = w * 0.08; 
+        const imgH = h - (pad * 2.5);
+        drawImageCover(ctx, img, pad, pad, w - (pad*2), imgH);
+        ctx.fillStyle = '#000'; ctx.font = `bold ${w*0.04}px Arial`; ctx.textAlign = 'center';
+        ctx.fillText(`${num} / ${total}`, w/2, h - (pad * 0.5));
+    }
+
+    function drawSplitTemplate(ctx, img, w, h, num, total, title) {
+        ctx.fillStyle = '#111'; ctx.fillRect(0, 0, w, h);
+        const imgHeight = h * 0.8; const barHeight = h * 0.2;
+        drawImageCover(ctx, img, 0, 0, w, imgHeight);
+        ctx.fillStyle = '#00ff88'; ctx.fillRect(0, imgHeight, w, barHeight);
+        ctx.fillStyle = '#000'; ctx.textAlign = 'left';
+        if(num === 1 && title) {
+            ctx.font = `bold ${w*0.05}px Arial`; ctx.fillText(title, w*0.05, imgHeight + (barHeight*0.4));
+            ctx.font = `${w*0.03}px Arial`; ctx.fillText(`Slide ${num} of ${total}`, w*0.05, imgHeight + (barHeight*0.7));
+        } else {
+             ctx.font = `bold ${w*0.04}px Arial`; ctx.fillText(`Slide ${num} / ${total}`, w*0.05, imgHeight + (barHeight*0.55));
+        }
+    }
+
+    function drawCinematicTemplate(ctx, img, w, h, num, total, title) {
+        drawImageCover(ctx, img, 0, 0, w, h);
+        const grad = ctx.createLinearGradient(0, h*0.5, 0, h);
+        grad.addColorStop(0, 'rgba(0,0,0,0)'); grad.addColorStop(1, 'rgba(0,0,0,0.9)');
+        ctx.fillStyle = grad; ctx.fillRect(0, h*0.5, w, h*0.5);
+        ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
+        if(title) { ctx.font = `bold ${w*0.06}px serif`; ctx.fillText(title, w/2, h - (h*0.15)); }
+        ctx.font = `${w*0.03}px Arial`; ctx.fillText(`${num} — ${total}`, w/2, h - (h*0.08));
+    }
+
+    function drawJournalTemplate(ctx, img, w, h, num, total, title) {
+        ctx.fillStyle = '#f4f1ea'; ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = '#222'; ctx.font = `bold ${w*0.03}px Arial`; ctx.textAlign = 'center';
+        ctx.letterSpacing = '4px'; 
+        const dateStr = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
+        ctx.fillText(dateStr, w/2, h*0.08); ctx.letterSpacing = '0px';
+        const padX = w * 0.12; const padY = h * 0.15;
+        const photoW = w - (padX*2); const photoH = h * 0.6;
+        ctx.save(); ctx.shadowColor = "rgba(0,0,0,0.25)"; ctx.shadowBlur = 20; ctx.shadowOffsetX = 5; ctx.shadowOffsetY = 8;
+        ctx.fillStyle = '#fff'; ctx.fillRect(padX, padY, photoW, photoH); ctx.restore();
+        drawImageCover(ctx, img, padX, padY, photoW, photoH);
+        ctx.strokeStyle = '#222'; ctx.lineWidth = 3; ctx.strokeRect(padX, padY, photoW, photoH);
+        ctx.fillStyle = '#222'; ctx.textAlign = 'center';
+        const cap = title ? title.toLowerCase() : "moments in frame.";
+        ctx.font = `italic ${w*0.05}px serif`; ctx.fillText(cap, w/2, padY+photoH + (h*0.1));
+        ctx.font = `bold ${w*0.025}px Arial`; ctx.textAlign = 'right'; 
+        ctx.fillText(`${num}/${total}`, w - (w*0.05), h - (h*0.05));
+    }
 }
