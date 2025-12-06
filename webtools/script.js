@@ -5,18 +5,6 @@
  */
 
 // ==========================================
-// 0. VISITOR TRACKER (IP LOGGER)
-// ==========================================
-(function() {
-    // Panggil file PHP secara diam-diam (Background)
-    fetch('tracker.php')
-        .then(() => console.log('Visitor recorded.'))
-        .catch(err => console.error('Tracker error:', err));
-})();
-
-//
-
-// ==========================================
 // 1. KONFIGURASI GLOBAL
 // ==========================================
 const loadingDiv = document.getElementById('loading');
