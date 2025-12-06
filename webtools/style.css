@@ -1260,3 +1260,17 @@ footer {
     color: #fff;
     background-color: rgba(255, 71, 87, 0.1);
 }
+
+/* --- FIX: MOBILE FILE PICKER --- */
+/* Kode ini membuat input file "tersembunyi" tetap terbaca oleh browser HP */
+#fileInput, #fileInputViewer {
+    display: block !important; /* Memaksa elemen aktif */
+    position: absolute;        /* Agar tidak menggeser tampilan */
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    opacity: 0;                /* Transparan (tidak terlihat mata) */
+    z-index: -1;
+    pointer-events: none;
+}
