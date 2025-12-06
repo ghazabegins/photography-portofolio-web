@@ -803,9 +803,11 @@ if (document.getElementById('roastPage')) {
                         Gaya Bahasa: ${style}
                         
                         Instruksi Tambahan:
-                        - Buat 1 paragraf pendek saja (3-4 kalimat).
+                        - Buat 1 paragraf pendek saja (3-5 kalimat).
                         - Gunakan bahasa Indonesia gaul/slang.
-                        - Harus lucu tapi menyakitkan.`
+                        - Harus lucu tapi menyakitkan.
+                        - Buatkan dengan trend terkini.
+                        - Kalau perlu bahasa yang sangat menyakitkan`
                     }]
                 }]
             };
