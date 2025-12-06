@@ -1,7 +1,7 @@
 /**
- * TJ SOSMED TOOLS - MASTER SCRIPT (FULL VERSION - MOBILE FIXED)
+ * TJ SOSMED TOOLS - MASTER SCRIPT (MOBILE OPTIMIZED FINAL)
  * Developed by Ghaza Algifari (2025)
- * All-in-One: Downloader, Metadata, AI Tools, Carousel, Watermark.
+ * Fixes: Memory Crash on Mobile, Format Support, & Batch Processing
  */
 
 // ==========================================
@@ -15,6 +15,9 @@ const videoTitle = document.getElementById('videoTitle');
 const apiKey = '804ff958ecmshe6d23ba4fd2be6bp154905jsn9d83ded4d839'; 
 const apiHost = 'social-media-video-downloader.p.rapidapi.com';
 
+// KONSTANTA PENTING UNTUK HP
+const MAX_MOBILE_DIMENSION = 4096; // Batas aman resolusi (4K) agar HP tidak crash
+
 // ==========================================
 // 2. FUNGSI BANTUAN (HELPER)
 // ==========================================
@@ -23,7 +26,7 @@ const apiHost = 'social-media-video-downloader.p.rapidapi.com';
 async function forceDownload(url, filename, btn) {
     const originalText = btn.innerText;
     btn.innerText = "Memproses...";
-    btn.style.backgroundColor = "#ffa500"; // Oranye
+    btn.style.backgroundColor = "#ffa500"; 
 
     try {
         const res = await fetch(url);
@@ -40,7 +43,7 @@ async function forceDownload(url, filename, btn) {
         URL.revokeObjectURL(blobUrl);
 
         btn.innerText = "Selesai!";
-        btn.style.backgroundColor = "#4CAF50"; // Hijau
+        btn.style.backgroundColor = "#4CAF50"; 
         setTimeout(() => { 
             btn.innerText = originalText; 
             btn.style.backgroundColor = ""; 
@@ -48,39 +51,39 @@ async function forceDownload(url, filename, btn) {
 
     } catch (e) {
         console.warn("Auto-download blocked.");
-        alert("Download otomatis diblokir browser. Video akan dibuka di tab baru, silakan Save Manual.");
+        alert("Download otomatis diblokir browser. Silakan Save Manual (Tekan tahan gambar).");
         window.open(url, '_blank');
         btn.innerText = originalText;
         btn.style.backgroundColor = "";
     }
 }
 
+// Helper: Resize Dimensi agar aman di Mobile
+function calculateSafeSize(w, h) {
+    if (w > MAX_MOBILE_DIMENSION || h > MAX_MOBILE_DIMENSION) {
+        if (w > h) {
+            h = Math.round(h * (MAX_MOBILE_DIMENSION / w));
+            w = MAX_MOBILE_DIMENSION;
+        } else {
+            w = Math.round(w * (MAX_MOBILE_DIMENSION / h));
+            h = MAX_MOBILE_DIMENSION;
+        }
+    }
+    return { w, h };
+}
+
 // ==========================================
-// 3. FITUR: LIVE TICKER (RUNNING TEXT)
+// 3. FITUR: LIVE TICKER
 // ==========================================
-// Fitur ini otomatis jalan di halaman dashboard
 (async function initTicker() {
     const tickerContent = document.getElementById('tickerContent');
     if (!tickerContent) return;
 
-    // DATA CADANGAN (Bencana & Isu Viral Desember 2025)
     const backupTrends = [
-        "Banjir Bandang Sumut & Aceh", 
-        "Menteri: 'Rakyat Jangan Manja'",
-        "BAHLIL TOLOL", 
-        "Longsor Jalan Sumbar-Riau", 
-        "Gempa Terkini BMKG", 
-        "Menteri: 'Banjir Itu Takdir Tuhan'", 
-        "Erupsi Gunung Semeru", 
-        "Solusi Polusi: 'Kurangi Bernapas'", 
-        "Banjir Rob Jakarta Utara", 
-        "Menteri: 'Internet Lambat Itu Berkah'", 
-        "Pajak Naik Rakyat Menjerit", 
-        "Korban Banjir Mengungsi", 
-        "Menteri: 'Makan Siang Gratis Ditunda'"
+        "Banjir Bandang Sumut", "Menteri Viral", "Gempa Terkini", 
+        "Pajak Naik", "Timnas Indonesia", "Harga Emas", "Wisata Viral"
     ];
 
-    // Fungsi Render HTML Ticker
     function renderTicker(items) {
         let html = "";
         items.forEach(topic => {
@@ -90,52 +93,40 @@ async function forceDownload(url, filename, btn) {
         tickerContent.innerHTML = html;
     }
 
-    // 1. TAMPILKAN CADANGAN DULUAN (Supaya user langsung lihat)
     renderTicker(backupTrends);
 
-    // 2. COBA AMBIL DATA GOOGLE REAL-TIME (Update jika berhasil)
     try {
         const rssUrl = 'https://trends.google.co.id/trends/trendingsearches/daily/rss?geo=ID';
-        // Gunakan Proxy AllOrigins untuk menembus CORS
         const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
-
         const response = await fetch(proxyUrl);
-        if(!response.ok) throw new Error("Proxy error");
-        
-        const str = await response.text();
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(str, "text/xml");
-        const items = xmlDoc.getElementsByTagName("item");
-
-        if (items.length > 0) {
-            const googleTrends = [];
-            for (let i = 0; i < 15 && i < items.length; i++) {
-                googleTrends.push(items[i].getElementsByTagName("title")[0].textContent);
+        if(response.ok) {
+            const str = await response.text();
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(str, "text/xml");
+            const items = xmlDoc.getElementsByTagName("item");
+            if (items.length > 0) {
+                const googleTrends = [];
+                for (let i = 0; i < 15 && i < items.length; i++) {
+                    googleTrends.push(items[i].getElementsByTagName("title")[0].textContent);
+                }
+                renderTicker(googleTrends);
             }
-            console.log("Google Trends Loaded!");
-            renderTicker(googleTrends);
         }
-    } catch (error) {
-        console.warn("Gagal load Google, tetap gunakan backup.", error);
-    }
+    } catch (error) { console.warn("Gagal load Google Trends"); }
 })();
 
 
 // ==========================================
-// 4. FITUR: MEDIA DOWNLOADER (UNIVERSAL)
+// 4. FITUR: MEDIA DOWNLOADER
 // ==========================================
 if (document.getElementById('urlInput')) {
-
     window.downloadVideo = async function() {
         let urlInput = document.getElementById('urlInput').value.trim();
         let downloadLink = document.getElementById('downloadLink');
 
         if (!urlInput) { alert("Harap masukkan URL media!"); return; }
-
-        // Bersihkan Link dari tracking code
         if (urlInput.includes('?')) urlInput = urlInput.split('?')[0];
 
-        // Reset UI
         loadingDiv.classList.remove('hidden');
         resultDiv.classList.add('hidden');
         const oldImg = document.getElementById('previewImg');
@@ -145,115 +136,74 @@ if (document.getElementById('urlInput')) {
             let apiUrl = '';
             let platform = '';
 
-            // --- DETEKSI PLATFORM ---
             if (urlInput.includes('instagram.com')) {
                 platform = 'Instagram';
-                // Gunakan endpoint Universal untuk IG (Cover Story & Post)
                 apiUrl = `https://${apiHost}/instagram/v3/media/download?url=${encodeURIComponent(urlInput)}`;
-            } 
-            else if (urlInput.includes('tiktok.com')) {
+            } else if (urlInput.includes('tiktok.com')) {
                 platform = 'TikTok';
                 apiUrl = `https://${apiHost}/tiktok/v3/post/details?url=${encodeURIComponent(urlInput)}`;
-            } 
-            else if (urlInput.includes('facebook.com') || urlInput.includes('fb.watch')) {
+            } else if (urlInput.includes('facebook.com') || urlInput.includes('fb.watch')) {
                 platform = 'Facebook';
                 apiUrl = `https://${apiHost}/facebook/v3/post/details?url=${encodeURIComponent(urlInput)}`;
-            } 
-            else {
-                throw new Error("Link tidak dikenali. Gunakan IG, TikTok, atau FB.");
+            } else {
+                throw new Error("Link tidak dikenali.");
             }
 
-            console.log(`Requesting: ${apiUrl}`);
-
-            // --- API REQUEST ---
             const response = await fetch(apiUrl, {
                 method: 'GET',
                 headers: { 'x-rapidapi-key': apiKey, 'x-rapidapi-host': apiHost }
             });
 
-            if (!response.ok) {
-                const err = await response.json().catch(()=>({}));
-                throw new Error(err.message || `Gagal mengambil data (${response.status}). Cek Link.`);
-            }
-
+            if (!response.ok) throw new Error("Gagal mengambil data.");
             const data = await response.json();
             
-            // --- PARSING DATA ---
-            let contentList = [];
-            if (data.contents) contentList = data.contents;
-            else if (data.data) contentList = [data.data];
-            else if (data.media_url || data.video_url) {
-                contentList = [{
-                    videos: [{ url: data.video_url || data.media_url, has_audio: true }],
-                    images: [{ url: data.thumbnail || data.display_url }]
-                }];
-            }
+            let contentList = data.contents || (data.data ? [data.data] : []);
+            if(data.media_url) contentList = [{ videos: [{url: data.media_url}], images: [{url: data.thumbnail}] }];
 
-            if (!contentList || contentList.length === 0) {
-                throw new Error("Media tidak ditemukan atau Akun Private.");
-            }
+            if (!contentList || contentList.length === 0) throw new Error("Media tidak ditemukan/Private.");
 
             const content = contentList[0];
-            let mediaData = null, fileType = 'mp4', labelType = 'VIDEO';
+            let mediaData = null, fileType = 'mp4';
 
-            // Cek Video
-            if (content.videos && content.videos.length > 0) {
-                if(platform === 'Instagram') mediaData = content.videos.find(v => v.has_audio) || content.videos[0];
-                else mediaData = content.videos[0];
-            } 
-            // Cek Foto
-            else if (content.images && content.images.length > 0) {
-                fileType = 'jpg'; labelType = 'FOTO';
-                mediaData = content.images[0];
-            }
+            if (content.videos && content.videos.length > 0) mediaData = content.videos[0];
+            else if (content.images && content.images.length > 0) { fileType = 'jpg'; mediaData = content.images[0]; }
 
-            // TAMPILKAN HASIL
             if (mediaData && mediaData.url) {
                 loadingDiv.classList.add('hidden');
                 resultDiv.classList.remove('hidden');
-
-                let title = data.metadata?.title || `${platform} Media`;
-                if(videoTitle) videoTitle.innerText = title.length > 60 ? title.substring(0, 60) + "..." : title;
                 
-                downloadLink.innerText = `DOWNLOAD ${labelType}`;
-                downloadLink.href = "#";
-
-                // Refresh Tombol
+                let title = data.metadata?.title || `${platform} Media`;
+                if(videoTitle) videoTitle.innerText = title.substring(0, 50) + "...";
+                
                 const newBtn = downloadLink.cloneNode(true);
                 downloadLink.parentNode.replaceChild(newBtn, downloadLink);
-
+                
+                newBtn.innerText = "DOWNLOAD";
+                newBtn.href = "#";
                 newBtn.addEventListener('click', (e) => {
                     e.preventDefault();
                     forceDownload(mediaData.url, `${platform}_${Date.now()}.${fileType}`, newBtn);
                 });
 
-                // Preview
-                let previewUrl = (fileType === 'jpg') ? mediaData.url : (data.metadata?.thumbnailUrl || content.cover || '');
-                if (!previewUrl && fileType === 'mp4') previewUrl = "https://via.placeholder.com/300x200?text=Preview+Video"; 
-                
+                let previewUrl = (fileType === 'jpg') ? mediaData.url : (data.metadata?.thumbnailUrl || content.cover);
                 if (previewUrl) {
                     const img = document.createElement('img');
                     img.id = 'previewImg'; img.src = previewUrl;
                     img.style.cssText = "width:100%; border-radius:10px; margin:10px 0;";
-                    const pc = document.querySelector('.video-preview');
-                    if(pc) pc.insertBefore(img, videoTitle);
+                    document.querySelector('.video-preview').insertBefore(img, videoTitle);
                 }
-
-            } else {
-                throw new Error("Link download kosong dalam respon API.");
-            }
+            } else { throw new Error("Link download kosong."); }
 
         } catch (error) {
             loadingDiv.classList.add('hidden');
             alert(`Gagal: ${error.message}`);
-            console.error(error);
         }
     };
 }
 
 
 // ==========================================
-// 5. FITUR: METADATA REMOVER (MOBILE FIXED)
+// 5. FITUR: METADATA REMOVER (FIXED MOBILE CRASH)
 // ==========================================
 if (document.getElementById('dropZone') && !document.getElementById('dropZoneViewer')) {
     const dropZone = document.getElementById('dropZone');
@@ -263,9 +213,6 @@ if (document.getElementById('dropZone') && !document.getElementById('dropZoneVie
     const cleanBtn = document.getElementById('downloadCleanBtn');
 
     dropZone.addEventListener('click', () => fileInput.click());
-    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-    dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); if (e.dataTransfer.files.length) processFile(e.dataTransfer.files[0]); });
     fileInput.addEventListener('change', () => { if (fileInput.files.length) processFile(fileInput.files[0]); });
 
     function processFile(file) {
@@ -281,27 +228,13 @@ if (document.getElementById('dropZone') && !document.getElementById('dropZoneVie
             img.onload = function() {
                 const canvas = document.createElement('canvas');
                 
-                // --- UPDATE: RESIZE LOGIC UNTUK HP (Mencegah Crash) ---
-                let w = img.width;
-                let h = img.height;
-                const MAX_DIMENSION = 4096; // Batas aman browser HP (4K)
-
-                if (w > MAX_DIMENSION || h > MAX_DIMENSION) {
-                    if (w > h) { 
-                        h = Math.round(h * (MAX_DIMENSION / w)); 
-                        w = MAX_DIMENSION; 
-                    } else { 
-                        w = Math.round(w * (MAX_DIMENSION / h)); 
-                        h = MAX_DIMENSION; 
-                    }
-                    console.log(`Resizing image to ${w}x${h} to prevent mobile crash.`);
-                }
-                // ----------------------------------------------------
-
-                canvas.width = w; 
-                canvas.height = h; 
+                // FIX: RESIZE IMAGE IF TOO BIG
+                const size = calculateSafeSize(img.width, img.height);
+                canvas.width = size.w;
+                canvas.height = size.h;
+                
                 const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, w, h); 
+                ctx.drawImage(img, 0, 0, size.w, size.h);
                 
                 canvas.toBlob((blob) => {
                     const cleanUrl = URL.createObjectURL(blob);
@@ -312,9 +245,9 @@ if (document.getElementById('dropZone') && !document.getElementById('dropZoneVie
                     cleanBtn.href = cleanUrl; 
                     cleanBtn.download = "Clean_" + file.name;
                 }, 'image/jpeg', 0.95); 
-            }; 
+            };
             img.onerror = function() {
-                alert("Gagal memuat gambar. File mungkin rusak.");
+                alert("File gambar rusak.");
                 loadingDiv.classList.add('hidden');
             };
             img.src = e.target.result;
@@ -325,7 +258,7 @@ if (document.getElementById('dropZone') && !document.getElementById('dropZoneVie
 
 
 // ==========================================
-// 6. FITUR: METADATA VIEWER (MOBILE PREVIEW FIXED)
+// 6. FITUR: METADATA VIEWER (FIXED PREVIEW)
 // ==========================================
 if (document.getElementById('viewerPage')) {
     const dropZone = document.getElementById('dropZoneViewer');
@@ -337,9 +270,6 @@ if (document.getElementById('viewerPage')) {
     const mapsLink = document.getElementById('mapsLink');
 
     dropZone.addEventListener('click', () => fileInput.click());
-    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-    dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); if(e.dataTransfer.files.length) processExif(e.dataTransfer.files[0]); });
     fileInput.addEventListener('change', () => { if(fileInput.files.length) processExif(fileInput.files[0]); });
 
     window.filterTable = function() {
@@ -350,37 +280,36 @@ if (document.getElementById('viewerPage')) {
     };
 
     function processExif(file) {
-        // HAPUS VALIDASI KETAT: Izinkan semua gambar untuk preview dulu
         if (!file.type.match('image.*')) { alert("Harap upload file gambar!"); return; }
-
+        
         loadingDiv.classList.remove('hidden'); 
         resultDiv.classList.add('hidden'); 
         document.querySelector('.upload-area').classList.add('hidden');
         
-        // 1. Tampilkan Preview (Penting agar user tidak bingung)
+        // 1. PREVIEW DULU (Apapun formatnya)
         const reader = new FileReader();
         reader.onload = function(e) { imgPreview.src = e.target.result; };
         reader.readAsDataURL(file);
 
-        // 2. Cek apakah EXIF didukung (Biasanya JPG/TIFF)
-        // File PNG/WEBP/HEIC biasanya tidak membawa EXIF standar di browser
+        // 2. CEK FORMAT JPG/TIFF
         const isJpeg = file.type === 'image/jpeg' || file.type === 'image/jpg' || file.name.toLowerCase().endsWith('.jpg');
 
         if (!isJpeg) {
-            // Jika bukan JPG, beri pesan info saja, jangan error/blank
             setTimeout(() => {
                 loadingDiv.classList.add('hidden'); 
                 resultDiv.classList.remove('hidden');
-                basicInfo.innerHTML = `<strong>${file.name}</strong><br>Tipe: ${file.type}<br><span style="color:#ff4757; font-size:0.9em;">(Format ini tidak memiliki data EXIF standar)</span>`;
-                tableBody.innerHTML = `<tr><td colspan="2" align="center">Metadata EXIF biasanya hanya tersedia pada file JPG asli dari kamera. File Screenshots (PNG) atau webp tidak memilikinya.</td></tr>`;
+                basicInfo.innerHTML = `<strong>${file.name}</strong><br>Tipe: ${file.type}<br><span style="color:#ff4757;">(Format ini tidak menyimpan data EXIF)</span>`;
+                tableBody.innerHTML = `<tr><td colspan="2" align="center">EXIF hanya tersedia di file JPG asli kamera. PNG/WEBP/Screenshot tidak memilikinya.</td></tr>`;
                 gpsContainer.classList.add('hidden');
             }, 500);
             return;
         }
 
-        // 3. Jika JPG, Ambil Data EXIF
+        // 3. JIKA JPG, BACA EXIF
         EXIF.getData(file, function() {
-            loadingDiv.classList.add('hidden'); resultDiv.classList.remove('hidden');
+            loadingDiv.classList.add('hidden'); 
+            resultDiv.classList.remove('hidden');
+            
             const allTags = EXIF.getAllTags(this);
             let tableHTML = "";
             let hasData = false;
@@ -402,11 +331,11 @@ if (document.getElementById('viewerPage')) {
             });
 
             for(let t in allTags) {
-                if(keyMap.some(k=>k.key==t) || t=='MakerNote' || t=='thumbnail' || t=='UserComment' || t.includes('GPS')) continue;
+                if(keyMap.some(k=>k.key==t) || t.includes('GPS') || t=='MakerNote' || t=='thumbnail' || t=='UserComment') continue;
                 tableHTML += `<tr><td style="color:#aaa">${t}</td><td>${allTags[t]}</td></tr>`;
             }
 
-            if(!hasData) tableHTML = `<tr><td colspan="2" align="center">Data Kosong (Mungkin hasil WA/SS yang metadatanya sudah dihapus)</td></tr>`;
+            if(!hasData) tableHTML = `<tr><td colspan="2" align="center">Data EXIF Kosong (Mungkin hasil WA/SS).</td></tr>`;
             
             tableBody.innerHTML = tableHTML;
             basicInfo.innerHTML = `<strong>${file.name}</strong> (${(file.size/1024/1024).toFixed(2)} MB)`;
@@ -416,8 +345,6 @@ if (document.getElementById('viewerPage')) {
             if(lat && lon) {
                 const latRef = EXIF.getTag(this, "GPSLatitudeRef") || "N";
                 const lonRef = EXIF.getTag(this, "GPSLongitudeRef") || "E";
-                
-                // Konversi DMS ke Decimal
                 const decLat = (lat[0] + lat[1]/60 + lat[2]/3600) * (latRef === "N" ? 1 : -1);
                 const decLon = (lon[0] + lon[1]/60 + lon[2]/3600) * (lonRef === "E" ? 1 : -1);
                 
@@ -437,16 +364,16 @@ if (document.getElementById('captionPage')) {
     const resultBox = document.getElementById('result');
     const captionText = document.getElementById('captionText');
     const templates = {
-        santai: ["Nikmati prosesnya. ✨", "Slow down. {topic}. ☕", "Definisi bahagia: {topic}. 🍃", "Recharge energy with {topic}. 🔋"],
-        lucu: ["Niatnya diet, eh ketemu {topic}. 🤪", "Dibalik foto ini ada perjuangan {topic} yg sulit dijelaskan. 🤣"],
-        motivasi: ["Jangan menyerah pada {topic}. 🔥", "Mulailah {topic} sekarang. 💪", "Fokus pada tujuan {topic}. 🚀"],
-        promosi: ["Promo spesial {topic}! 🔥", "Solusi terbaik: {topic}. 🛍️", "Jangan sampai kehabisan {topic}. 📢"],
-        aesthetic: ["Lost in {topic}. 🌙", "Collecting moments with {topic}. 🎞️", "Estetika {topic}. ✨"]
+        santai: ["Nikmati prosesnya. ✨", "Slow down. {topic}. ☕", "Definisi bahagia: {topic}. 🍃"],
+        lucu: ["Niatnya diet, eh ketemu {topic}. 🤪", "Dibalik foto ini ada perjuangan {topic}. 🤣"],
+        motivasi: ["Jangan menyerah pada {topic}. 🔥", "Mulailah {topic} sekarang. 💪"],
+        promosi: ["Promo spesial {topic}! 🔥", "Solusi terbaik: {topic}. 🛍️"],
+        aesthetic: ["Lost in {topic}. 🌙", "Collecting moments with {topic}. 🎞️"]
     };
-    const hashtags = { santai: "#chill #goodvibes", lucu: "#ngakak #humor", motivasi: "#sukses #semangat", promosi: "#promo #diskon", aesthetic: "#aesthetic #art" };
+    const hashtags = { santai: "#chill", lucu: "#ngakak", motivasi: "#sukses", promosi: "#promo", aesthetic: "#aesthetic" };
 
     window.generateCaption = function() {
-        const topic = document.getElementById('topicInput').value.trim() || "hal ini";
+        const topic = document.getElementById('topicInput').value.trim() || "moment ini";
         const tone = document.getElementById('toneInput').value;
         const list = templates[tone];
         const random = list[Math.floor(Math.random() * list.length)];
@@ -472,14 +399,8 @@ if (document.getElementById('hashtagPage')) {
     const tagsNiche = document.getElementById('tagsNiche');
 
     const hashtagDB = {
-        "kopi": { hard: "#coffee #coffeelover", medium: "#ngopi #kopihitam", niche: "#manualbrew #kopipagi" },
-        "bola": { hard: "#football #soccer", medium: "#sepakbola #timnas", niche: "#infobola #ligaindonesia" },
-        "bisnis": { hard: "#business #success", medium: "#bisnisonline #cuan", niche: "#belajarbisnis #umkm" },
-        "travel": { hard: "#travel #vacation", medium: "#jalanjalan #liburan", niche: "#wisatalokal #healing" },
-        "fotografi": { hard: "#photography #art", medium: "#fotografiindonesia #instanusantara", niche: "#belajarfotografi #motret" },
-        "gaming": { hard: "#gaming #esports", medium: "#gamersindonesia #mabar", niche: "#mobilelegendsindonesia #pubgmobile" },
-        "skincare": { hard: "#skincare #beauty", medium: "#skincareindonesia #glowing", niche: "#racunskincare #reviewjujur" },
-        "makanan": { hard: "#food #yummy", medium: "#kulinerindonesia #jajanan", niche: "#kulinerviral #resepmasakan" }
+        "kopi": { hard: "#coffee", medium: "#ngopi", niche: "#manualbrew" },
+        "bola": { hard: "#football", medium: "#timnas", niche: "#ligaindonesia" }
     };
 
     window.generateHashtags = function() {
@@ -493,9 +414,9 @@ if (document.getElementById('hashtagPage')) {
             tagsMedium.value = hashtagDB[foundKey].medium;
             tagsNiche.value = hashtagDB[foundKey].niche;
         } else {
-            tagsHard.value = "#viral #fyp #trending";
-            tagsMedium.value = "#indonesia #daily #instadaily";
-            tagsNiche.value = `#${input.replace(/\s/g,'')} #${input.replace(/\s/g,'_')}`;
+            tagsHard.value = "#viral #fyp";
+            tagsMedium.value = "#indonesia #daily";
+            tagsNiche.value = `#${input.replace(/\s/g,'')}`;
         }
     };
     window.copyTags = function(id) { navigator.clipboard.writeText(document.getElementById(id).value).then(()=>alert("Disalin!")); };
@@ -506,7 +427,7 @@ if (document.getElementById('hashtagPage')) {
 
 
 // ==========================================
-// 9. FITUR: AUTO WATERMARK (BATCH + CROP RATIO)
+// 9. FITUR: AUTO WATERMARK (FIXED MOBILE CRASH)
 // ==========================================
 if (document.getElementById('watermarkPage')) {
     const mainInput = document.getElementById('mainPhotoInput');
@@ -521,29 +442,16 @@ if (document.getElementById('watermarkPage')) {
     const resultArea = document.getElementById('wmResultArea');
     const resultGrid = document.getElementById('wmResultsGrid');
 
-    // State Variables
     let wmSelectedFiles = [];
     let previewImg = new Image();
     let logoImg = new Image();
-    let isPreviewLoaded = false;
-    let isLogoLoaded = false;
-    
-    // Settings
-    let currentPos = 'mc'; 
-    let currentSize = 20; 
-    let currentAlpha = 1; 
-    let currentRatio = 'original'; // Default
+    let isPreviewLoaded = false, isLogoLoaded = false;
+    let currentPos = 'mc', currentSize = 20, currentAlpha = 1, currentRatio = 'original';
 
-    // --- EVENT LISTENERS ---
-    
-    // Ratio Selector
+    // Event Listeners
     document.querySelectorAll('input[name="wmRatio"]').forEach(radio => {
-        radio.addEventListener('change', function() {
-            currentRatio = this.value;
-            updatePreview(); // Redraw saat ganti ukuran
-        });
+        radio.addEventListener('change', function() { currentRatio = this.value; updatePreview(); });
     });
-
     document.querySelectorAll('.pos-box').forEach(box => {
         box.addEventListener('click', function() {
             document.querySelectorAll('.pos-box').forEach(b => b.classList.remove('active'));
@@ -552,7 +460,6 @@ if (document.getElementById('watermarkPage')) {
             updatePreview();
         });
     });
-
     document.getElementById('sizeSlider').addEventListener('input', function() { currentSize = this.value; sizeVal.innerText = this.value + "%"; updatePreview(); });
     document.getElementById('opacitySlider').addEventListener('input', function() { currentAlpha = this.value / 100; alphaVal.innerText = this.value + "%"; updatePreview(); });
 
@@ -581,36 +488,27 @@ if (document.getElementById('watermarkPage')) {
         reader.readAsDataURL(e.target.files[0]);
     });
 
-    // --- HELPER: DRAW IMAGE COVER (CROP TO FILL) ---
+    // Drawing Logic
     function drawImageProp(ctx, img, w, h) {
-        // Jika mode original, gambar biasa saja
         if (currentRatio === 'original') {
-            ctx.drawImage(img, 0, 0);
+            ctx.drawImage(img, 0, 0, w, h); // Draw full with resized dimension
             return;
         }
-
-        // Jika mode crop, hitung aspect ratio
         const imgRatio = img.width / img.height;
         const targetRatio = w / h;
         let drawW, drawH, drawX, drawY;
 
         if (imgRatio > targetRatio) { 
-            // Gambar lebih lebar dari target -> Crop kiri kanan
             drawH = h; drawW = h * imgRatio; drawY = 0; drawX = (w - drawW) / 2; 
         } else { 
-            // Gambar lebih tinggi dari target -> Crop atas bawah
             drawW = w; drawH = w / imgRatio; drawX = 0; drawY = (h - drawH) / 2; 
         }
-        
         ctx.drawImage(img, drawX, drawY, drawW, drawH);
     }
 
-    // --- LOGIKA UTAMA (PREVIEW & BATCH) ---
     function applyWatermarkToCanvas(context, image, w, h) {
-        // 1. Gambar Foto Utama (Auto Crop / Original)
         drawImageProp(context, image, w, h);
 
-        // 2. Gambar Logo (Jika ada)
         if (isLogoLoaded) {
             const logoWidth = (w * currentSize) / 100;
             const logoHeight = logoWidth * (logoImg.height / logoImg.width);
@@ -626,7 +524,7 @@ if (document.getElementById('watermarkPage')) {
 
             context.globalAlpha = currentAlpha;
             context.drawImage(logoImg, x, y, logoWidth, logoHeight);
-            context.globalAlpha = 1.0; // Reset
+            context.globalAlpha = 1.0; 
         }
     }
 
@@ -635,27 +533,30 @@ if (document.getElementById('watermarkPage')) {
         canvas.style.display = 'block'; placeholder.style.display = 'none';
         if (isLogoLoaded) processBtn.disabled = false;
 
-        // Tentukan Ukuran Canvas
         let w = previewImg.width;
         let h = previewImg.height;
 
-        // Update: Batasi Ukuran Preview agar HP tidak berat
-        const PREVIEW_MAX = 1080; 
-
-        if (currentRatio !== 'original') {
-            w = 1080; 
+        // FIX: RESIZE PREVIEW FOR MOBILE
+        if (currentRatio === 'original') {
+             // Preview di HP tidak perlu full 50MP, cukup kecil saja biar ringan
+            const previewMax = 1080; 
+            if(w>previewMax || h>previewMax) {
+                if(w>h){ h=Math.round(h*(previewMax/w)); w=previewMax;}
+                else { w=Math.round(w*(previewMax/h)); h=previewMax;}
+            }
+        } else {
+            w = 1080;
             if (currentRatio === 'square') h = 1080;
-            else if (currentRatio === 'portrait') h = 1350; // 4:5
-            else if (currentRatio === 'story') h = 1920; // 9:16
+            else if (currentRatio === 'portrait') h = 1350;
+            else if (currentRatio === 'story') h = 1920;
         }
 
         canvas.width = w;
         canvas.height = h;
-
         applyWatermarkToCanvas(ctx, previewImg, w, h);
     }
 
-    // --- BATCH PROCESS ---
+    // Batch Process
     processBtn.addEventListener('click', async function() {
         if (wmSelectedFiles.length === 0 || !isLogoLoaded) return;
         loadingDiv.classList.remove('hidden'); resultArea.classList.add('hidden'); resultGrid.innerHTML = '';
@@ -669,18 +570,15 @@ if (document.getElementById('watermarkPage')) {
                         img.onload = function() {
                             const tCanvas = document.createElement('canvas');
                             
-                            // Hitung ukuran per foto
+                            // Hitung ukuran OUTPUT
                             let w = img.width;
                             let h = img.height;
 
-                            // RESIZE JIKA MODE ORIGINAL TAPI FOTO TERLALU BESAR
-                            const SAFE_MAX = 4096;
-                            if (currentRatio === 'original' && (w > SAFE_MAX || h > SAFE_MAX)) {
-                                if(w>h) { h = h*(SAFE_MAX/w); w = SAFE_MAX; }
-                                else { w = w*(SAFE_MAX/h); h = SAFE_MAX; }
-                            }
-
-                            if (currentRatio !== 'original') {
+                            // FIX: RESIZE OUTPUT JIKA TERLALU BESAR (CRASH PREVENTION)
+                            if (currentRatio === 'original') {
+                                const size = calculateSafeSize(w, h);
+                                w = size.w; h = size.h;
+                            } else {
                                 w = 1080;
                                 if (currentRatio === 'square') h = 1080;
                                 else if (currentRatio === 'portrait') h = 1350;
@@ -690,9 +588,7 @@ if (document.getElementById('watermarkPage')) {
                             tCanvas.width = w;
                             tCanvas.height = h;
                             const tCtx = tCanvas.getContext('2d');
-
                             applyWatermarkToCanvas(tCtx, img, w, h);
-
                             resolve({ src: tCanvas.toDataURL('image/jpeg', 0.9), num: index + 1 });
                         };
                         img.src = e.target.result;
@@ -717,14 +613,14 @@ if (document.getElementById('watermarkPage')) {
             resultArea.scrollIntoView({ behavior: 'smooth' });
 
         } catch (error) {
-            loadingDiv.classList.add('hidden'); alert("Error processing images."); console.error(error);
+            loadingDiv.classList.add('hidden'); alert("Gagal memproses gambar."); console.error(error);
         }
     });
 }
 
 
 // ==========================================
-// 10. FITUR: AUTO CAROUSEL (DYNAMIC SIZE & TEMPLATES)
+// 10. FITUR: AUTO CAROUSEL (FIXED)
 // ==========================================
 if (document.getElementById('carouselPage')) {
     const fileInput = document.getElementById('carouselInput');
@@ -750,27 +646,22 @@ if (document.getElementById('carouselPage')) {
         const ratioType = document.querySelector('input[name="ratio"]:checked').value;
         const mainTitle = document.getElementById('carouselTitle').value.trim();
         
-        // Tentukan Ukuran Canvas
         let cWidth = 1080;
-        let cHeight = 1080; // Default Square
-
-        if (ratioType === 'portrait') {
-            cHeight = 1350; // 4:5
-        } else if (ratioType === 'story') {
-            cHeight = 1920; // 9:16
-        }
+        let cHeight = 1080; 
+        if (ratioType === 'portrait') cHeight = 1350; 
+        else if (ratioType === 'story') cHeight = 1920; 
 
         try {
-            const imagePromises = selectedFiles.map(file => {
-                return new Promise((resolve, reject) => {
+            // FIX: Load images one by one to save memory
+            const loadedImages = [];
+            for (let file of selectedFiles) {
+                await new Promise((resolve) => {
                     const img = new Image();
-                    img.onload = () => resolve(img);
-                    img.onerror = reject;
+                    img.onload = () => { loadedImages.push(img); resolve(); };
+                    img.onerror = () => { resolve(); }; // Skip error image
                     img.src = URL.createObjectURL(file);
                 });
-            });
-
-            const loadedImages = await Promise.all(imagePromises);
+            }
 
             loadedImages.forEach((img, index) => {
                 const canvas = document.createElement('canvas');
@@ -779,7 +670,7 @@ if (document.getElementById('carouselPage')) {
                 const slideNum = index + 1;
                 const total = loadedImages.length;
 
-                // Panggil Template dengan Parameter Width & Height
+                // Template Drawing
                 if (templateType === 'minimal') drawMinimalTemplate(ctx, img, cWidth, cHeight, slideNum, total);
                 else if (templateType === 'split') drawSplitTemplate(ctx, img, cWidth, cHeight, slideNum, total, mainTitle);
                 else if (templateType === 'cinematic') drawCinematicTemplate(ctx, img, cWidth, cHeight, slideNum, total, mainTitle);
@@ -799,13 +690,11 @@ if (document.getElementById('carouselPage')) {
             resultDiv.scrollIntoView({ behavior: 'smooth' });
 
         } catch (error) {
-            loadingDiv.classList.add('hidden'); alert("Gagal memproses gambar."); console.error(error);
+            loadingDiv.classList.add('hidden'); alert("Gagal memproses carousel."); console.error(error);
         }
     });
 
-    // --- TEMPLATE DRAWER FUNCTIONS (UPDATED FOR DYNAMIC SIZE) ---
-    
-    // Helper: Draw Cover (Aspect Fill)
+    // Template Functions (Helpers)
     function drawImageCover(ctx, img, x, y, w, h) {
         const imgRatio = img.width / img.height;
         const targetRatio = w / h;
@@ -821,23 +710,19 @@ if (document.getElementById('carouselPage')) {
 
     function drawMinimalTemplate(ctx, img, w, h, num, total) {
         ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, w, h);
-        const pad = w * 0.08; // Padding 8% dari lebar
-        const imgH = h - (pad * 2.5); // Sisakan ruang bawah untuk teks
+        const pad = w * 0.08; 
+        const imgH = h - (pad * 2.5);
         drawImageCover(ctx, img, pad, pad, w - (pad*2), imgH);
-        
         ctx.fillStyle = '#000'; ctx.font = `bold ${w*0.04}px Arial`; ctx.textAlign = 'center';
         ctx.fillText(`${num} / ${total}`, w/2, h - (pad * 0.5));
     }
 
     function drawSplitTemplate(ctx, img, w, h, num, total, title) {
         ctx.fillStyle = '#111'; ctx.fillRect(0, 0, w, h);
-        const imgHeight = h * 0.8; // Foto 80% tinggi
-        const barHeight = h * 0.2;
+        const imgHeight = h * 0.8; const barHeight = h * 0.2;
         drawImageCover(ctx, img, 0, 0, w, imgHeight);
-        
         ctx.fillStyle = '#00ff88'; ctx.fillRect(0, imgHeight, w, barHeight);
         ctx.fillStyle = '#000'; ctx.textAlign = 'left';
-        
         if(num === 1 && title) {
             ctx.font = `bold ${w*0.05}px Arial`; ctx.fillText(title, w*0.05, imgHeight + (barHeight*0.4));
             ctx.font = `${w*0.03}px Arial`; ctx.fillText(`Slide ${num} of ${total}`, w*0.05, imgHeight + (barHeight*0.7));
@@ -851,7 +736,6 @@ if (document.getElementById('carouselPage')) {
         const grad = ctx.createLinearGradient(0, h*0.5, 0, h);
         grad.addColorStop(0, 'rgba(0,0,0,0)'); grad.addColorStop(1, 'rgba(0,0,0,0.9)');
         ctx.fillStyle = grad; ctx.fillRect(0, h*0.5, w, h*0.5);
-        
         ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
         if(title) { ctx.font = `bold ${w*0.06}px serif`; ctx.fillText(title, w/2, h - (h*0.15)); }
         ctx.font = `${w*0.03}px Arial`; ctx.fillText(`${num} — ${total}`, w/2, h - (h*0.08));
@@ -859,32 +743,19 @@ if (document.getElementById('carouselPage')) {
 
     function drawJournalTemplate(ctx, img, w, h, num, total, title) {
         ctx.fillStyle = '#f4f1ea'; ctx.fillRect(0, 0, w, h);
-        
-        // Header
         ctx.fillStyle = '#222'; ctx.font = `bold ${w*0.03}px Arial`; ctx.textAlign = 'center';
         ctx.letterSpacing = '4px'; 
         const dateStr = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
         ctx.fillText(dateStr, w/2, h*0.08); ctx.letterSpacing = '0px';
-
-        // Foto Utama (Disesuaikan rasio)
-        const padX = w * 0.12; 
-        const padY = h * 0.15;
-        const photoW = w - (padX*2);
-        const photoH = h * 0.6; // Tinggi foto 60% dari canvas
-        
-        // Shadow
+        const padX = w * 0.12; const padY = h * 0.15;
+        const photoW = w - (padX*2); const photoH = h * 0.6;
         ctx.save(); ctx.shadowColor = "rgba(0,0,0,0.25)"; ctx.shadowBlur = 20; ctx.shadowOffsetX = 5; ctx.shadowOffsetY = 8;
         ctx.fillStyle = '#fff'; ctx.fillRect(padX, padY, photoW, photoH); ctx.restore();
-
-        // Foto
         drawImageCover(ctx, img, padX, padY, photoW, photoH);
         ctx.strokeStyle = '#222'; ctx.lineWidth = 3; ctx.strokeRect(padX, padY, photoW, photoH);
-
-        // Caption & Number
         ctx.fillStyle = '#222'; ctx.textAlign = 'center';
         const cap = title ? title.toLowerCase() : "moments in frame.";
         ctx.font = `italic ${w*0.05}px serif`; ctx.fillText(cap, w/2, padY+photoH + (h*0.1));
-        
         ctx.font = `bold ${w*0.025}px Arial`; ctx.textAlign = 'right'; 
         ctx.fillText(`${num}/${total}`, w - (w*0.05), h - (h*0.05));
     }
