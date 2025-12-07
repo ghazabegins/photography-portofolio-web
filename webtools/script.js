@@ -768,7 +768,7 @@ if (document.getElementById('carouselPage')) {
 if (document.getElementById('roastPage')) {
 
     // ⚠️ WAJIB DIISI: Masukkan API Key Gemini Anda di sini
-    const GEMINI_API_KEY = "AIzaSyBAV4DrQl9Y0mEQScvlfA_9ymi5RFR8Els"; 
+    const GEMINI_API_KEY = "AIzaSyAbMVpPQvFjjbTSZVQqBvXT-fTrNOFYXC4"; 
 
     window.generateRoast = async function() {
         const username = document.getElementById('roastUsername').value.trim();
