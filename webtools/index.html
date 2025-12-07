@@ -17,7 +17,7 @@
             <p>Web Tools untuk Content Creator by Ghaza Algifari.</p>
         </header>
         <div style="text-align: center; margin-top: -35px; margin-bottom: 10px;">
-        <a href="./thx" class="simple-ack-btn">
+        <a href="acknowledgment.html" class="simple-ack-btn">
             <i class="fas fa-heart" style="margin-right: 5px;"></i> Acknowledgment
         </a>
     </div>
@@ -34,7 +34,7 @@
 
         <div class="tools-grid">
             
-            <a href="./downloader" class="tool-card">
+            <a href="downloader.html" class="tool-card">
                 <div class="icon-box">
                     <i class="fas fa-cloud-download-alt"></i>
                 </div>
@@ -43,7 +43,7 @@
                 <span class="badge">Aktif</span>
             </a>
 
-            <a href="./remover" class="tool-card">
+            <a href="remover.html" class="tool-card">
                 <div class="icon-box">
                     <i class="fas fa-fingerprint"></i>
                 </div>
@@ -52,7 +52,7 @@
                 <span class="badge">Aktif</span>
             </a>
 
-            <a href="./viewer" class="tool-card">
+            <a href="viewer.html" class="tool-card">
                 <div class="icon-box">
                     <i class="fas fa-eye"></i>
                 </div>
@@ -61,7 +61,7 @@
                 <span class="badge">Baru</span>
             </a>
 
-            <a href="./caption" class="tool-card">
+            <a href="caption.html" class="tool-card">
                 <div class="icon-box">
                     <i class="fas fa-magic"></i>
                 </div>
@@ -70,7 +70,7 @@
                 <span class="badge">Aktif</span>
             </a>
 
-             <a href="./hashtag" class="tool-card"> 
+             <a href="hashtag.html" class="tool-card"> 
                 <div class="icon-box">
                     <i class="fas fa-hashtag"></i>
                 </div>
@@ -79,7 +79,7 @@
                 <span class="badge">Aktif</span>
             </a>
 
-            <a href="./watermark" class="tool-card">
+            <a href="watermark.html" class="tool-card">
                 <div class="icon-box">
                     <i class="fas fa-stamp"></i>
                 </div>
@@ -88,7 +88,7 @@
                 <span class="badge">Baru</span>
             </a>
 
-            <a href="./carousel" class="tool-card">
+            <a href="carousel.html" class="tool-card">
                 <div class="icon-box" style="color: #e056fd;"> 
                     <i class="fas fa-layer-group"></i>
                 </div>
@@ -97,7 +97,7 @@
                 <span class="badge" style="background: #e056fd;">Viral</span>
             </a>
 
-            <a href="./roaster" class="tool-card">
+            <a href="roaster.html" class="tool-card">
                 <div class="icon-box" style="color: #FF512F;">
                     <i class="fas fa-fire-alt"></i>
                 </div>
@@ -126,5 +126,29 @@
     </div>
 
 <script src="script.js"></script>
+<div id="apiNoticeModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-icon">⚠️</div>
+            <h2>Info Penting</h2>
+            <p>Beberapa fitur di web ini menggunakan <strong>API Limited</strong>.</p>
+            <p>Jadi mohon maklum kalau sewaktu-waktu beberapa fiturnya error atau limit harian habis ya! Hehe 🙏</p>
+            <button onclick="closeNotice()" class="btn-understand">Siap, Paham!</button>
+        </div>
+    </div>
+
+    <script>
+        // Cek apakah user sudah melihat notice ini di sesi ini
+        if (!sessionStorage.getItem('noticeShown')) {
+            // Tampilkan modal jika belum dilihat
+            document.getElementById('apiNoticeModal').style.display = 'flex';
+        }
+
+        function closeNotice() {
+            // Sembunyikan modal
+            document.getElementById('apiNoticeModal').style.display = 'none';
+            // Simpan status di browser agar tidak muncul terus saat refresh (hilang saat browser ditutup)
+            sessionStorage.setItem('noticeShown', 'true');
+        }
+    </script>
 </body>
 </html>
