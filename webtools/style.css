@@ -1419,3 +1419,42 @@ footer {
         word-break: break-word; /* Agar teks panjang turun ke bawah */
     }
 }
+
+/* --- FIX TAMPILAN MOBILE (Paste di baris paling bawah style.css) --- */
+@media (max-width: 768px) {
+    .tool-card {
+        /* 1. Memberi ruang kosong di kanan agar teks tidak menabrak badge */
+        padding-right: 70px !important;
+
+        /* 2. Merapikan Layout: Menggunakan Grid agar Teks Judul & Deskripsi 
+           tersusun vertikal di sebelah kanan Icon, bukan memanjang ke samping */
+        display: grid !important;
+        grid-template-columns: auto 1fr; /* Kolom 1: Icon (auto), Kolom 2: Teks (sisa ruang) */
+        column-gap: 15px;
+        align-items: center;
+    }
+
+    /* Mengatur posisi Icon agar rapi di sebelah kiri */
+    .tool-card .icon-box {
+        grid-row: 1 / span 2; /* Icon mengambil tinggi 2 baris */
+        margin-bottom: 0 !important;
+        width: 50px;
+        text-align: center;
+    }
+
+    /* Merapikan Judul */
+    .tool-card h3 {
+        grid-column: 2;
+        margin-bottom: 2px;
+        font-size: 1.1rem;
+        line-height: 1.2;
+    }
+
+    /* Merapikan Deskripsi */
+    .tool-card p {
+        grid-column: 2;
+        margin-bottom: 0;
+        font-size: 0.85rem;
+        line-height: 1.3;
+    }
+}
